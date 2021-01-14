@@ -6,8 +6,10 @@ Requires=network.target
 [Service]
 EnvironmentFile=/etc/sysconfig/kraken
 Type=notify
-WorkingDirectory={{ kraken_working_directory }}
-ExecStart={{ kr_build_dir ~ '/' ~ kr_target }} -ip "$KRAKEN_IP" -ipapi "$KRAKEN_IPAPI" -log "$KRAKEN_LOGLEVEL" -journald -sdnotify
+WorkingDirectory={{ ansible_env.HOME }}
+ExecStart={{ kr_build_dir ~ '/' ~ kr_target }} -id "$KRAKEN_UUID" -ip "$KRAKEN_IP" -ipapi "$KRAKEN_IPAPI" -log "$KRAKEN_LOGLEVEL" -journald -sdnotify
+# this is a temporary hack to load state
+ExecStartPost=sleep 2
 ExecStartPost=/bin/bash -c '/usr/bin/curl -XPOST -H "Content-type: application/json" -d "@$KRAKEN_STATE_FILE" "http://$KRAKEN_IPAPI:3141/cfg/nodes"'
 
 [Install]
