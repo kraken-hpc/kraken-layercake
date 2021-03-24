@@ -1,3 +1,6 @@
 [submodule "kraken"]
 	path = kraken
 	url = https://github.com/kraken-hpc/kraken
+[submodule "utils/ansible"]
+	path = utils/ansible
+	url = git@github.com:kraken-hpc/kraken-layercake-ansible.git
