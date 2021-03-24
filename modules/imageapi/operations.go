@@ -18,7 +18,7 @@ import (
 	api "github.com/kraken-hpc/imageapi/client"
 	"github.com/kraken-hpc/imageapi/client/containers"
 	"github.com/kraken-hpc/imageapi/models"
-	ia "github.com/kraken-hpc/kraken/extensions/imageapi"
+	ia "github.com/kraken-hpc/kraken-layercake/extensions/imageapi"
 	kjson "github.com/kraken-hpc/kraken/lib/json"
 	"github.com/kraken-hpc/kraken/lib/types"
 	"github.com/kraken-hpc/kraken/lib/util"

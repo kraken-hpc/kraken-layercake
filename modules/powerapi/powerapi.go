@@ -123,7 +123,7 @@ type PowerAPI struct {
 var _ types.Module = (*PowerAPI)(nil)
 
 // Name returns the FQDN of the module
-func (*PowerAPI) Name() string { return "github.com/kraken-hpc/kraken/modules/powerapi" }
+func (*PowerAPI) Name() string { return "github.com/kraken-hpc/kraken-layercake/modules/powerapi" }
 
 /*
  * types.ModuleWithConfig

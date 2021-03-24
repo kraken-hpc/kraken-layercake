@@ -116,7 +116,7 @@ type VBM struct {
 var _ types.Module = (*VBM)(nil)
 
 // Name returns the FQDN of the module
-func (*VBM) Name() string { return "github.com/kraken-hpc/kraken/modules/vboxmanage" }
+func (*VBM) Name() string { return "github.com/kraken-hpc/kraken-layercake/modules/vboxmanage" }
 
 /*
  * types.ModuleWithConfig

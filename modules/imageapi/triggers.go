@@ -10,7 +10,7 @@
 package imageapi
 
 import (
-	ia "github.com/kraken-hpc/kraken/extensions/imageapi"
+	ia "github.com/kraken-hpc/kraken-layercake/extensions/imageapi"
 	"github.com/kraken-hpc/kraken/lib/types"
 	"github.com/kraken-hpc/kraken/lib/util"
 )

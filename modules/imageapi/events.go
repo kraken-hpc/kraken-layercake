@@ -15,9 +15,9 @@ import (
 	"regexp"
 	"time"
 
+	ia "github.com/kraken-hpc/kraken-layercake/extensions/imageapi"
 	"github.com/kraken-hpc/kraken/core"
 	cpb "github.com/kraken-hpc/kraken/core/proto"
-	ia "github.com/kraken-hpc/kraken/extensions/imageapi"
 	"github.com/kraken-hpc/kraken/lib/types"
 	"github.com/kraken-hpc/kraken/lib/util"
 )
