@@ -1,15 +1,15 @@
-Name:           kraken
-Version:        1.0
-Release:        1%{?dist}
-Summary:        Kraken is a distributed state engine for scalable system boot and automation
+Name:           kraken-layercake
+Version:        0.1.0
+Release:        rc1%{?dist}
+Summary:        Kraken/Layercake is a cluster management solution based on the Kraken framework. 
 Group:          Applications/System
 License:        BSD-3
-URL:            https://github.com/kraken-hpc/kraken
+URL:            https://github.com/kraken-hpc/kraken-layercake
 Source0:        %{name}-%{version}.tar.gz
 BuildRequires:  go, golang >= 1.15, golang-bin, golang-src %define  debug_package %{nil}
 
 %bcond_with initramfs
-%bcond_with powermanapi
+%bcond_with vbox
 %bcond_with vboxapi
 
 %if "%{_arch}" == "x86_64"
@@ -27,7 +27,7 @@ BuildRequires:  go, golang >= 1.15, golang-bin, golang-src %define  debug_packag
 # TODO - add more architectures
 
 %description
-Kraken is a distributed state engine that can maintain state across a large set of computers. It was designed to provide full-lifecycle maintenance of HPC compute clusters, from cold boot to ongoing system state maintenance and automation.
+Kraken/Layercake is a cluster management solution based on the Kraken framework.  It provides full-lifecycle maintenance of HPC compute clusters, from cold boot to ongoing system state maintenance and automation.
 
 %if %{with initramfs}
 # Define initramfs-<arch> sub-package
@@ -39,33 +39,29 @@ Summary: A base initramfs for use with Kraken PXE configurations (%{GoBuildArch}
 This package installs a pre-built base initramfs (arch: %{GoBuildArch}) for use with a Kraken PXE setup.  This initramfs should be layered with at least two other pieces: 1. a set of needed system modules; 2. a set of configuration files (e.g. uinit.script).
 %endif
 
-%if %{with powermanapi}
-%package powermanapi
+%if %{with vbox}
+%package vbox
 Group: Applications/System
-Requires: powerman
-Summary: The powermanapi wraps the powerman service with a simple restful API service.
-%description powermanapi
-The powermanapi service wraps the powerman service with a simple restful API service that can be used by Kraken.
+Summary: Provides a vbox-enabled Kraken/Layercake.
+%description vbox
+Provides a vbox-enabled kraken-layercake. This version of Layercake is primarily intended for demonstrations and examples using VirtualBox.
 %endif
 
 %if %{with vboxapi}
 %package vboxapi
 Group: Applications/System
-Summary: The vboxapi wraps Oracle VirtualBox with a simple restful API service for power control of VMs.
+Summary: Provides the vboxapi service which wraps Oracle VirtualBox with a simple restful API service for power control of VMs.
 %description vboxapi
 The vboxapi service wraps Oracle VirtualBox with a simple restful API service for power control that can be used by Kraken.
 %endif
 
 %prep
 %setup -q
-cp -p %{?KrakenConfig}%{?!KrakenConfig:kraken.yaml} build.yaml
 
 %build
-
 # template systemd units
-rpm -D "KrakenWorkingDirectory %{?KrakenWorkingDirectory}%{?!KrakenWorkingDirectory:/}" --eval "$(cat utils/rpm/kraken.service)" > kraken.service
-rpm --eval "$(cat utils/powermanapi/powermanapi.service)" > powermanapi.service
-rpm --eval "$(cat utils/powermanapi/powermanapi.environment)" > powermanapi.environment
+rpm -D "KrakenWorkingDirectory %{?KrakenWorkingDirectory}%{?!KrakenWorkingDirectory:/}" --eval "$(cat utils/rpm/kraken-layercake.service)" > kraken-layercake.service
+rpm -D "KrakenWorkingDirectory %{?KrakenWorkingDirectory}%{?!KrakenWorkingDirectory:/}" --eval "$(cat utils/rpm/kraken-layercake-vbox.service)" > kraken-layercake-vbox.service
 rpm --eval "$(cat utils/vboxapi/vboxapi.service)" > vboxapi.service
 rpm --eval "$(cat utils/vboxapi/vboxapi.environment)" > vboxapi.environment
 
@@ -73,28 +69,15 @@ rpm --eval "$(cat utils/vboxapi/vboxapi.environment)" > vboxapi.environment
 NATIVE_GOOS=$(go version | awk '{print $NF}' | awk -F'/' '{print $1}')
 NATIVE_GOGOARCH=$(go version | awk '{print $NF}' | awk -F'/' '{print $2}')
 
-cat << EOF >> build.yaml 
-
-targets:
-  'native':
-    os: $NATIVE_GOOS
-    arch: $NATIVE_GOARCH
-  'rpm':
-    os: 'linux'
-    arch: '%{GoBuildArch}'
-  'u-root':
-EOF
-
-go run kraken-build.go -force -v -config build.yaml
+GOARCH=%{GoBuildArch} go build ./cmd/kraken-layercake
 
 # create default runtime config file
-build/kraken-native -state "/etc/kraken/state.json" -noprefix -sdnotify -printrc > defaults.yaml
+./kraken-layercake -state "/etc/kraken/layercake/state.json" -noprefix -sdnotify -printrc > layercake-config.yaml
 
-%if %{with powermanapi}
-# build powermanapi
+%if %{with vbox}
 (
-  cd utils/powermanapi
-  GOARCH=%{GoBuildArch} go build powermanapi.go
+  GOARCH=%{GoBuildArch} go build ./cmd/kraken-layercake-vbox
+  ./kraken-layercake-vbox -state "/etc/kraken/layercake-vbox/state.json" -noprefix -sdnotify -printrc > layercake-vbox-config.yaml
 )
 %endif
 
@@ -120,15 +103,16 @@ rm -rf $GOPATH
 %install
 mkdir -p %{buildroot}
 # kraken
-install -D -m 0755 build/kraken-rpm %{buildroot}%{_sbindir}/kraken
-install -D -m 0644 kraken.service %{buildroot}%{_unitdir}/kraken.service
-install -D -m 0644 utils/rpm/state.json %{buildroot}%{_sysconfdir}/kraken/state.json
-install -D -m 0644 defaults.yaml %{buildroot}%{_sysconfdir}/kraken/config.yaml
-%if %{with powermanapi}
-# powermanapi
-install -D -m 0755 utils/powermanapi/powermanapi %{buildroot}%{_sbindir}/powermanapi
-install -D -m 0644 powermanapi.service %{buildroot}%{_unitdir}/powermanapi.service
-install -D -m 0644 powermanapi.environment %{buildroot}%{_sysconfdir}/sysconfig/powermanapi
+install -D -m 0755 kraken-layercake %{buildroot}%{_sbindir}/kraken-layercake
+install -D -m 0644 kraken-layercake.service %{buildroot}%{_unitdir}/kraken-layercake.service
+install -D -m 0644 utils/rpm/state.json %{buildroot}%{_sysconfdir}/kraken/layercake/state.json
+install -D -m 0644 layercake-config.yaml %{buildroot}%{_sysconfdir}/kraken/layercake/config.yaml
+%if %{with vbox}
+# kraken-layercake-vbox
+install -D -m 0755 kraken-layercake-vbox %{buildroot}%{_sbindir}/kraken-layercake-vbox
+install -D -m 0644 kraken-layercake-vbox.service %{buildroot}%{_unitdir}/kraken-layercake-vbox.service
+install -D -m 0644 utils/rpm/state.json %{buildroot}%{_sysconfdir}/kraken/layercake-vbox/state.json
+install -D -m 0644 layercake-vbox-config.yaml %{buildroot}%{_sysconfdir}/kraken/layercake-vbox/config.yaml
 %endif
 %if %{with vboxapi}
 # vboxapi
@@ -144,17 +128,18 @@ install -D -m 0644 initramfs-base-%{GoBuildArch}.gz %{buildroot}/tftp/initramfs-
 %files
 %defattr(-,root,root)
 %license LICENSE
-%{_sbindir}/kraken
-%config(noreplace) %{_sysconfdir}/kraken/state.json
-%config(noreplace) %{_sysconfdir}/kraken/config.yaml
-%{_unitdir}/kraken.service
+%{_sbindir}/kraken-layercake
+%config(noreplace) %{_sysconfdir}/kraken/layercake/state.json
+%config(noreplace) %{_sysconfdir}/kraken/layercake/config.yaml
+%{_unitdir}/kraken-layercake.service
 
-%if %{with powermanapi}
-%files powermanapi
+%if %{with vbox}
+%files vbox
 %license LICENSE
-%{_sbindir}/powermanapi
-%config(noreplace) %{_sysconfdir}/sysconfig/powermanapi
-%{_unitdir}/powermanapi.service
+%{_sbindir}/kraken-layercake-vbox
+%config(noreplace) %{_sysconfdir}/kraken/layercake-vbox/state.json
+%config(noreplace) %{_sysconfdir}/kraken/layercake-vbox/config.yaml
+%{_unitdir}/kraken-layercake-vbox.service
 %endif
 
 %if %{with vboxapi}
@@ -172,6 +157,11 @@ install -D -m 0644 initramfs-base-%{GoBuildArch}.gz %{buildroot}/tftp/initramfs-
 %endif
 
 %changelog
+* Wed Mar 24 2021 J. Lowell Wofford <lowelL@lanl.gov> 0.1.0-rc0
+- Migrate to kraken-layercake from kraken
+- Build/install kraken-layercake-vbox if vbox is specified
+- Remove the depricated powermanapi
+- Reset versioning to match intended git versioning scheme
 
 * Tue Jan 26 2021 J. Lowell Wofford <lowell@lanl.gov> 1.0-1
 - Add initramfs, powermanapi, and vboxapi packages

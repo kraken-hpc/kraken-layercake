@@ -1,0 +1,12 @@
+[Unit]
+Description=Kraken/Layercake cluster management (vbox)
+After=network.target network-online.target
+Requires=network.target
+
+[Service]
+Type=notify
+WorkingDirectory=%{?KrakenWorkingDirectory}%{?!KrakenWorkingDirectory:/}
+ExecStart=%{_sbindir}/kraken-layercake-vbox -config %{_sysconfdir}/kraken/layercake/config.yaml -noprefix -sdnotify
+
+[Install]
+WantedBy=multi-user.target
