@@ -9,3 +9,5 @@ state.json
 **/.DS_Store
 /kraken-build
 **/*.swp
+cmd/kraken-layercake/kraken-layercake
+cmd/kraken-layercake-vbox/kraken-layercake-vbox
