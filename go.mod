@@ -14,7 +14,7 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/kraken-hpc/go-fork v0.1.1
 	github.com/kraken-hpc/imageapi v0.1.4
-	github.com/kraken-hpc/kraken v0.0.0-20210323174739-68c1e3706fb2
+	github.com/kraken-hpc/kraken v0.0.0-20210324190123-ba28824525d3
 	github.com/kraken-hpc/powerapi v0.1.1
 	github.com/mdlayher/raw v0.0.0-20191009151244-50f2db8cc065
 	github.com/pin/tftp v2.1.0+incompatible
