@@ -1,0 +1,14 @@
+# included extensions
+extensions:
+  - github.com/kraken-hpc/kraken/extensions/ipv4
+  - github.com/kraken-hpc/kraken-layercake/extensions/imageapi
+  - github.com/kraken-hpc/kraken-layercake/extensions/pxe
+  - github.com/kraken-hpc/kraken-layercake/extensions/vbox
+
+# included modules
+modules:
+  - github.com/kraken-hpc/kraken/modules/restapi
+  - github.com/kraken-hpc/kraken/modules/websocket
+  - github.com/kraken-hpc/kraken-layercake/modules/imageapi
+  - github.com/kraken-hpc/kraken-layercake/modules/pxe
+  - github.com/kraken-hpc/kraken-layercake/modules/vboxmanage
