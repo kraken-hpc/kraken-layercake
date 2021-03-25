@@ -17,14 +17,15 @@
 ###
 
 usage() {
-        echo "Usage: $0 [-o <out_file>] [-b <base_dir>] [-k <kraken_source_dir>] [-B <kraken_build_dir>] <arch>"
+        echo "Usage: $0 [-k] [-o <out_file>] [-b <base_dir>] [ -t <tmp_dir> ] <arch> [<additional_go_cmd> ...]"
         echo "  <arch> should be the GOARCH we want to build (e.g. arm64, amd64...)"
-        echo "  <out_file> is the file the image should be written to.  (default: initramfs.<date>.<img>.cpio.gz)"
+        echo "  <out_file> is the file the image should be written to.  (default: layer0-00-base.<date>.<arch>.cpio.xz)"
         echo "  <base_dir> is an optional base directory containing file/directory structure (default: none)"
         echo "             that should be added to the image"
-        echo "  <kraken_source_dir> is the location of the kraken source (default: GOPATH/src/github.com/kraken-hpc/kraken)"
-        echo "  <kraken_build_dir> specifies an alternate path where to look for the generated kraken source"
-        echo "             tree to be used by u-root (default: <kraken_source_dir>/build)"
+        echo "  <tmp_dir> is a temporary directory to use.  This can be used to resume a previous build"
+        echo "            IMPORTANT: tmp_dir cannot sit inside of a moduled go directory!"
+        echo "  <additional_go_cmd> is a go cmd path spec that should be built into the busybox"
+        echo "  [-k] keep temporary directory (do not delete)"
 }
 
 # Exit with a failure message
@@ -33,11 +34,12 @@ fatal() {
     exit 1
 }
 
-if ! opts=$(getopt o:b:k:B: "$@"); then
+if ! opts=$(getopt o:b:t:k "$@"); then
     usage
     exit
 fi
 
+DELETE_TMPDIR=1
 # shellcheck disable=SC2086
 set -- $opts
 for i; do
@@ -51,98 +53,98 @@ for i; do
             echo "Using base dir $2"
             BASEDIR="$2"
             shift; shift;;
-        -k)
-            echo "Using kraken source dir $2"
-            KRAKEN_SOURCEDIR=$2
+        -t) echo "Using tmp dir $2"
+            TMPDIR=$(readlink -f "$2")
             shift; shift;;
-        -B)
-            echo "Using kraken build dir $2"
-            KRAKEN_BUILDDIR=$2
-            shift; shift;;
+        -k) echo "Will not delete temporary directory at the end"
+            DELETE_TMPDIR=0
+            shift;;
         --)
             shift; break;;
     esac
 done
 
-if [ $# -ne 1 ]; then
+if [ $# -lt 1 ]; then
     usage
     exit 1
 fi
 
 ARCH=$1
-
-if [ -z "${GOPATH+x}" ]; then
-    echo "GOPATH isn't set, using $HOME/go"
-    GOPATH=$HOME/go
-fi
+shift
 
 # Commands to build into u-root busybox
 EXTRA_COMMANDS=()
-EXTRA_COMMANDS+=( github.com/jlowellwofford/entropy/cmd/entropy )
+EXTRA_COMMANDS+=( github.com/kraken-hpc/kraken-layercake/cmd/kraken-layercake )
 EXTRA_COMMANDS+=( github.com/kraken-hpc/uinit/cmds/uinit )
+EXTRA_COMMANDS+=( github.com/kraken-hpc/imageapi/cmd/imageapi-server )
+EXTRA_COMMANDS+=( github.com/jlowellwofford/entropy/cmd/entropy )
 EXTRA_COMMANDS+=( github.com/bensallen/modscan/cmd/modscan )
+EXTRA_COMMANDS+=( github.com/bensallen/rbd/cmd/rbd )
 
-if [ -z "${KRAKEN_SOURCEDIR+x}" ]; then
-    KRAKEN_SOURCEDIR="$GOPATH/src/github.com/kraken-hpc/kraken"
-    echo "Using kraken source dir $KRAKEN_SOURCEDIR"
-fi
+while (( "$#" )); do 
+    echo "Adding command $1"
+    EXTRA_COMMANDS+=( "$1" )
+    shift
+done
 
-if [ -z "${KRAKEN_BUILDDIR+x}" ]; then
-    KRAKEN_BUILDDIR="$KRAKEN_SOURCEDIR/build"
-    echo "Using kraken build dir $KRAKEN_BUILDDIR"
-fi
+UROOT="github.com/u-root/u-root"
 
 # make a temporary directory for our base
-TMPDIR=$(mktemp -d)
-echo "Using tmpdir: $TMPDIR"
-
-# Check that kraken build dir is not empty
-contents=$(ls -A "$KRAKEN_BUILDDIR")
-if [ -z "$contents" ]; then
-    echo "$KRAKEN_BUILDDIR is empty; build it before running this"
-    exit 1
+if [ -z ${TMPDIR+x} ]; then
+    TMPDIR="$PWD/$(mktemp -tmpdir -d layer0.XXXXXXXXXXXX)"
+else 
+    if [ ! -d "$TMPDIR" ]; then
+        echo "Creating $TMPDIR"
+        mkdir -p "$TMPDIR" || fatal "failed to create $TMPDIR"
+    fi
 fi
-echo "Using generated kraken source tree at $KRAKEN_BUILDDIR"
+echo "Using tmpdir: $TMPDIR"
+ORIG_PWD="$PWD"
+cd "$TMPDIR" || fatal "couldn't cd to $TMPDIR"
+GOPATH="$TMPDIR/gopath"
+
+EXTRA_MODS=()
+# Make sure commands are available
+for c in "${EXTRA_COMMANDS[@]}"; do
+   if [ ! -d "$GOPATH/src/$c" ]; then
+    echo "installing $c"
+    GOPATH=$GOPATH GO111MODULE=off go get "$c" || fatal "failed to install $c"
+   fi
+    cd "$GOPATH/src/$c" || fatal "couldn't cd to $GOPATH/src/$c"
+    go mod edit -replace=github.com/u-root/u-root="$GOPATH/src/$UROOT"
+    MOD=$(go mod edit -print | awk '$1=="module"{print $2}')
+    echo "mod: $MOD"
+    EXTRA_MODS+=( "$MOD" )
+done
+
+# fixup mod deps
+for c in "${EXTRA_COMMANDS[@]}"; do
+    (
+        cd "$GOPATH/src/$c" || fatal "couldn't cd to $GOPATH/src/$c"
+        if [ -d "vendor" ]; then
+            echo "Removing vendor folder $PWD/vendor"
+            rm -rf "$PWD/vendor"
+        fi
+        for m in "${EXTRA_MODS[@]}"; do 
+            go mod edit -replace="$m=$GOPATH/src/$m"
+        done
+    )
+done
 
 # Check that gobusybox is installed, clone it if not
-if [ ! -d "$GOPATH"/bin/makebb ]; then
-    echo "You don't appear to have gobusybox installed, attempting to install it"
-    GOPATH="$GOPATH" GO111MODULE=off go get github.com/u-root/gobusybox/src/cmd/makebb
+if [ ! -x "$GOPATH"/bin/makebb ]; then
+    echo "installing gobusybox"
+    GOPATH="$GOPATH" GO111MODULE=off go get github.com/u-root/gobusybox/src/cmd/makebb || fatal "failed to install gobusybox"
 fi
 
 # Check that u-root is installed, clone it if not
 if [ ! -x "$GOPATH"/bin/u-root ]; then
-    echo "You don't appear to have u-root installed, attempting to install it"
-    GOPATH="$GOPATH" GO111MODULE=off go get github.com/u-root/u-root
+    echo "installing u-root"
+    GOPATH="$GOPATH" GO111MODULE=off go get "$UROOT" || fatal "failed to install u-root"
 fi
 
-# Make sure commands are available
-for c in "${EXTRA_COMMANDS[@]}"; do
-   if [ ! -d "$GOPATH/src/$c" ]; then
-    echo "You don't appear to have $c, attempting to install it"
-    GOPATH=$GOPATH GO111MODULE=off go get "$c"
-   fi
-done
-
-# Resolve the u-root dependency conflict between local copy and that required by
-# github.com/kraken-hpc/uinit according to:
-# https://github.com/u-root/gobusybox#common-dependency-conflicts
-go mod edit -replace=github.com/u-root/u-root=../../u-root/u-root "$GOPATH"/src/github.com/kraken-hpc/uinit/go.mod
-
-# Delete vendor/ directory so that makebb will only see modules and not throw the error:
-# "busybox does not support mixed module/non-module compilation"
-# Also, modify the go.mod to use the local u-root.
-# This is a hack.
-(
- modscan_path="$GOPATH"/src/github.com/bensallen/modscan
- cd "${modscan_path}" || fatal "Could not enter ${modscan_path}. Does it exist?"
- go mod edit -replace=github.com/u-root/u-root=../../u-root/u-root go.mod
- rm -rf vendor/
-)
-
 # Generate the array of commands to add to BusyBox binary
-BB_COMMANDS=( "$GOPATH"/src/github.com/u-root/u-root/cmds/{core,boot,exp}/* )
-BB_COMMANDS+=( "$GOPATH"/src/github.com/kraken-hpc/kraken/build/u-root/kraken )
+BB_COMMANDS=( "$GOPATH/src/$UROOT"/cmds/{core,boot,exp}/* )
 # shellcheck disable=SC2068
 for cmd in ${EXTRA_COMMANDS[@]}; do
     BB_COMMANDS+=( "$GOPATH"/src/"$cmd" )
@@ -151,6 +153,7 @@ done
 # Create BusyBox binary (outside of u-root)
 echo "Creating BusyBox binary..."
 mkdir -p "$TMPDIR"/base/bbin
+printf "Command list: %s" "${BB_COMMANDS[@]}"
 # shellcheck disable=SC2068
 "$GOPATH"/bin/makebb -o "$TMPDIR"/base/bbin/bb ${BB_COMMANDS[@]} || fatal "makebb: failed to create BusyBox binary"
 
@@ -181,14 +184,17 @@ echo "CONTENTS:"
 cpio -itv < "$TMPDIR"/initramfs.cpio
 
 echo "Compressing..."
-gzip "$TMPDIR"/initramfs.cpio
+xz "$TMPDIR"/initramfs.cpio
 
 if [ -z "${OUTFILE+x}" ]; then
     D=$(date +%Y%m%d.%H%M)
-    OUTFILE="initramfs.${D}.${ARCH}.cpio.gz"
+    OUTFILE="layer0-00-base.${D}.${ARCH}.cpio.xz"
 fi
-mv -v "$TMPDIR"/initramfs.cpio.gz "$PWD"/"$OUTFILE"
+mv -v "$TMPDIR"/initramfs.cpio.xz "$ORIG_PWD"/"$OUTFILE"
 
-rm -rf "$TMPDIR"
+if [ $DELETE_TMPDIR -eq 1 ]; then
+    echo "Removing temporary directory"
+    rm -rf "$TMPDIR"
+fi
 
 echo "Image built as $OUTFILE"
