@@ -4,16 +4,10 @@
 # This will build a layer0 image.
 #
 # Notes:
-# - It's not very resilient.
-# - It expects you already have built kraken in $GOPATH/github.com/kraken-hpc/kraken/build
-# - It will attempt to install u-root if it doesn't find it in $GOPATH/bin
-# - You can overlay a base directory by providing a second argument.
+# - We build in a dedicated "tmp_dir", including a separate GOPATH.  This helps ensure consistent builds.
+# - You can keep (-k) and reuse a tmp_dir (-t <tmp_dir>), which can speed up builds significantly when frequently rebuilding/testing.
+# - You can overlay a base directory by providing a second argument.  However, we recommend concatinated CPIOs instead.
 #
-# Kernel Modules:
-#  - If /modules.txt exists and contains a line-by-line of full paths (from <base_dir>/) to .ko kernel modules.
-#  - uinit will insmod those modules in order before doing anything else.
-#  - uinit will not resolve module dependencies, so list them in dependency order.
-#  - u-root's insmod doesn't support compressed modules, so uncompress them first.
 ###
 
 usage() {
@@ -91,7 +85,7 @@ UROOT="github.com/u-root/u-root"
 
 # make a temporary directory for our base
 if [ -z ${TMPDIR+x} ]; then
-    TMPDIR="$PWD/$(mktemp -tmpdir -d layer0.XXXXXXXXXXXX)"
+    TMPDIR="$PWD/$(mktemp -tmpdir -d layer0-base.XXXXXXXXXXXX)"
 else 
     if [ ! -d "$TMPDIR" ]; then
         echo "Creating $TMPDIR"
