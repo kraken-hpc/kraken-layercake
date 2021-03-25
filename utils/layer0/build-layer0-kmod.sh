@@ -5,7 +5,7 @@
 ###
 
 usage() {
-   echo "Usage: $0 [-ka] [-o <out_file>] [-c <chroot_dir>] [-t <tmp_dir>] [-f <mod_file>] <kernel_version> [<mod> ...]"
+   echo "Usage: $0 [-kha] [-o <out_file>] [-c <chroot_dir>] [-t <tmp_dir>] [-f <mod_file>] <kernel_version> [<mod> ...]"
    echo "  <out_file> file the image should be written to. (default: layer0-10-kmod.<kernel_version>.cpio.xz)"
    echo "  <chroot_dir> chroot to look for kernel modules in (currently not implemented)"
    echo "  <tmp_dir> is a temporary directory to use.  This can be used to resume a previous build"
@@ -14,6 +14,7 @@ usage() {
    echo "  <mod> ... modules to be added to the kmod bundle (can be combined with <mod_file>)"
    echo "  [-k] keep termporary directory (do not delete)"
    echo "  [-a] install all available modules (ignores <mod_file> and <mod>)"
+   echo "  [-h] display this usage information and exit"
 }
 
 fatal() {
@@ -48,7 +49,7 @@ build_modlist() {
    IFS=$'\n' MODLIST=($( sort -u <<<"${MODLIST[*]}")); unset IFS
 }
 
-if ! opts=$(getopt c:f:o:t:ka "$@"); then
+if ! opts=$(getopt c:f:o:t:kah "$@"); then
    usage
    exit
 fi
@@ -63,6 +64,10 @@ set -- $opts
 for i; do
    case "$i"
    in
+      -h)
+         usage
+         exit
+         shift; shift;;
       -c)
          fatal "Chroot is not yet implemented."
          if [ ! -d "$2" ]; then

@@ -11,7 +11,7 @@
 ###
 
 usage() {
-        echo "Usage: $0 [-k] [-o <out_file>] [-b <base_dir>] [ -t <tmp_dir> ] <arch> [<additional_go_cmd> ...]"
+        echo "Usage: $0 [-kh] [-o <out_file>] [-b <base_dir>] [ -t <tmp_dir> ] <arch> [<additional_go_cmd> ...]"
         echo "  <arch> should be the GOARCH we want to build (e.g. arm64, amd64...)"
         echo "  <out_file> is the file the image should be written to.  (default: layer0-00-base.<date>.<arch>.cpio.xz)"
         echo "  <base_dir> is an optional base directory containing file/directory structure (default: none)"
@@ -20,6 +20,7 @@ usage() {
         echo "            IMPORTANT: tmp_dir cannot sit inside of a moduled go directory!"
         echo "  <additional_go_cmd> is a go cmd path spec that should be built into the busybox"
         echo "  [-k] keep temporary directory (do not delete)"
+        echo "  [-h] display this usage information and exit"
 }
 
 # Exit with a failure message
@@ -28,7 +29,7 @@ fatal() {
     exit 1
 }
 
-if ! opts=$(getopt o:b:t:k "$@"); then
+if ! opts=$(getopt o:b:t:kh "$@"); then
     usage
     exit
 fi
@@ -39,6 +40,10 @@ set -- $opts
 for i; do
     case "$i"
     in
+        -h)
+            usage
+            exit
+            shift; shift;;
         -o)
             echo "Output file is $2"
             OUTFILE="$2"
