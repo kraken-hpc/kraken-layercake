@@ -24,8 +24,9 @@ fatal() {
 
 build_modlist_all() {
    echo "Building modlist (all)"
-   for m in $( find "/lib/modules/$KVER" -name '*.ko*' ); do
-      MODLIST+=( $m )
+   shopt -s globstar nullglob
+   for m in /lib/modules/"$KVER"/**/*.ko*; do
+      MODLIST+=( "$m" )
    done
 }
 
@@ -36,16 +37,17 @@ build_modlist() {
          fatal "Modfile does not exist $MODFILE"
       fi
       echo "Reading module list from $MODFILE"
-      for m in $( cat "$MODFILE" | grep -vE '^#|^$' || fatal "couldn't read $MODFILE" ); do
+      for m in $( grep -vE '^#|^$' "$MODFILE" || fatal "couldn't read $MODFILE" ); do
          NAMES+=( "$m" )
       done 
    fi
    for n in "${NAMES[@]}"; do
-      for m in $( modprobe --set-version="$KVER" --show-depends "$n" | awk '$1=="insmod"{print $2}' || fatal 'could not find module by name '$n ); do 
+      for m in $( modprobe --set-version="$KVER" --show-depends "$n" | awk '$1=="insmod"{print $2}' || fatal 'could not find module by name '"$n" ); do 
          MODLIST+=( "$m" )
       done
    done
 
+   # shellcheck disable=SC2207
    IFS=$'\n' MODLIST=($( sort -u <<<"${MODLIST[*]}")); unset IFS
 }
 
@@ -133,7 +135,7 @@ fi
 printf "Modlist: %s\n" "${MODLIST[@]}"
 
 if [ -z ${TMPDIR+x} ]; then
-   TMPDIR=$(mktemp -tmpdir -d layer0-kmod.XXXXXXXXXXXX)
+   TMPDIR=$(mktemp --tmpdir -d layer0-kmod.XXXXXXXXXXXX)
 else
    if [ ! -d "$TMPDIR" ]; then
       echo "Creating $TMPDIR"
@@ -146,8 +148,8 @@ mkdir -p "root/lib/modules/$KVER" || fatal "could not create module directory"
 
 echo "Installing modules"
 for m in "${MODLIST[@]}"; do
-   b=$( basename $m )
-   d=$( dirname $m )
+   b=$( basename "$m" )
+   d=$( dirname "$m" )
    ddir="$TMPDIR/root$d"
    mkdir -p "$ddir" || fatal "could not mkdir $ddir"
    /bin/cp -Lv "$m" "$ddir/$b" || fatal "could not copy module $m"
