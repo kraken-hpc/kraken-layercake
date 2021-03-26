@@ -51,6 +51,7 @@ jobs:
           name: Run extension tests
           command: |
             mkdir -p /tmp/test-reports
+            shopt -s nullglob extglob
             for d in extesions/*; do
             cd $d
             gotestsum --junitfile /tmp/test-reports/extension-unit-tests-$( basename $d ).xml
@@ -59,6 +60,7 @@ jobs:
           name: Run module tests
           command: |
             mkdir -p /tmp/test-reports
+            shopt -s nullglob extglob
             for d in extesions/*; do
             cd $d
             gotestsum --junitfile /tmp/test-reports/module-unit-tests-$( basename $d ).xml
