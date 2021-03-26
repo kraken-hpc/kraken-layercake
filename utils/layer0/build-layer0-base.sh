@@ -90,7 +90,7 @@ UROOT="github.com/u-root/u-root"
 
 # make a temporary directory for our base
 if [ -z ${TMPDIR+x} ]; then
-    TMPDIR="$PWD/$(mktemp -tmpdir -d layer0-base.XXXXXXXXXXXX)"
+    TMPDIR="$(mktemp --tmpdir -d layer0-base.XXXXXXXXXXXX)"
 else 
     if [ ! -d "$TMPDIR" ]; then
         echo "Creating $TMPDIR"
