@@ -27,11 +27,12 @@ jobs:
           command: |
             cd cmd/kraken-layercake-vbox
             go build .
-      - run:
-          name: Build layer0-base
-          command: |
-            cd utils/layer0
-            bash build-layer0-base.sh amd64
+# this script doesn't currently work in the circleci container (failes to mktemp with "invalid option -m")
+#      - run:
+#          name: Build layer0-base
+#          command: |
+#            cd utils/layer0
+#            bash build-layer0-base.sh amd64
       - store_test_results:
           path: /tmp/test-reports
   test:
