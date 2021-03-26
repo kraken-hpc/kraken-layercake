@@ -1,0 +1,72 @@
+# Use the latest 2.1 version of CircleCI pipeline process engine. See: https://circleci.com/docs/2.0/configuration-reference
+version: 2.1
+jobs:
+  build:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/golang:1.15.8
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - go-mod-v4-{{ checksum "go.sum" }}
+      - run:
+          name: Install Dependencies
+          command: go mod download
+      - save_cache:
+          key: go-mod-v4-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg/mod"
+      - run:
+          name: Run build kraken-layerake
+          command: |
+            cd cmd/kraken-layercake
+            go build .
+      - run:
+          name: Run build kraken-layerake-vbox
+          command: |
+            cd cmd/kraken-layercake-vbox
+            go build .
+      - store_test_results:
+          path: /tmp/test-reports
+  test:
+    docker:
+      - image: circleci/golang:1.15.8
+    environment:
+      TEST_RESULTS: /tmp/test-results
+    steps:
+      - checkout
+      - run: mkdir -p $TEST_RESULTS
+      - restore_cache:
+          keys:
+            - go-mod-v4-{{ checksum "go.sum" }}
+      - run:
+          name: Install Dependencies
+          command: go mod download
+      - save_cache:
+          key: go-mod-v4-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg/mod"
+      - run:
+          name: Run extension tests
+          command: |
+            mkdir -p /tmp/test-reports
+            for d in extesions/*; do
+            cd $d
+            gotestsum --junitfile /tmp/test-reports/extension-unit-tests-$( basename $d ).xml
+            done
+      - run:
+          name: Run module tests
+          command: |
+            mkdir -p /tmp/test-reports
+            for d in extesions/*; do
+            cd $d
+            gotestsum --junitfile /tmp/test-reports/module-unit-tests-$( basename $d ).xml
+            done
+
+workflows:
+  version: 2
+  test_and_build:
+    jobs:
+      - test
+      - build
