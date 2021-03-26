@@ -10,7 +10,6 @@ BuildRequires:  go, golang >= 1.15, golang-bin, golang-src %define  debug_packag
 
 %bcond_with initramfs
 %bcond_with vbox
-%bcond_with vboxapi
 
 %if "%{_arch}" == "x86_64"
 %define GoBuildArch amd64
@@ -37,6 +36,16 @@ Group: Applications/System
 Summary: A base initramfs for use with Kraken PXE configurations (%{GoBuildArch}).
 %description initramfs-%{GoBuildArch}
 This package installs a pre-built base initramfs (arch: %{GoBuildArch}) for use with a Kraken PXE setup.  This initramfs should be layered with at least two other pieces: 1. a set of needed system modules; 2. a set of configuration files (e.g. uinit.script).
+
+%if %{with vbox}
+# Build the initramfs-vbox
+%package initramfs-vbox-%{GoBuildArch}
+BuildArch: noarch
+Group: Applications/System
+Summary: A base initramfs for use with Kraken PXE configurations (%{GoBuildArch}).
+%description initramfs-vbox-%{GoBuildArch}
+This package installs a pre-built base initramfs (arch: %{GoBuildArch}) for use with a Kraken PXE setup.  This initramfs should be layered with at least two other pieces: 1. a set of needed system modules; 2. a set of configuration files (e.g. uinit.script).
+%endif
 %endif
 
 %if %{with vbox}
@@ -47,7 +56,7 @@ Summary: Provides a vbox-enabled Kraken/Layercake.
 Provides a vbox-enabled kraken-layercake. This version of Layercake is primarily intended for demonstrations and examples using VirtualBox.
 %endif
 
-%if %{with vboxapi}
+%if %{with vbox}
 %package vboxapi
 Group: Applications/System
 Summary: Provides the vboxapi service which wraps Oracle VirtualBox with a simple restful API service for power control of VMs.
@@ -81,7 +90,7 @@ GOARCH=%{GoBuildArch} go build ./cmd/kraken-layercake
 )
 %endif
 
-%if %{with vboxapi}
+%if %{with vbox}
 # build vboxapi
 (
   cd utils/vboxapi
@@ -91,13 +100,15 @@ GOARCH=%{GoBuildArch} go build ./cmd/kraken-layercake
 
 %if %{with initramfs}
 # build initramfs
-export GOPATH=%{_builddir}/go
-mkdir -p $GOPATH/src/github.com/kraken-hpc
-ln -s $PWD $GOPATH/src/github.com/kraken-hpc/kraken
-bash utils/layer0/buildlayer0_uroot.sh -o initramfs-base-%{GoBuildArch}.gz %{GoBuildArch}
+bash utils/layer0/build-layer0-base.sh -k -t /tmp/layer0-base -o layer0-base-%{GoBuildArch}.xz %{GoBuildArch}
 
-chmod -R u+w $GOPATH
-rm -rf $GOPATH
+%if %{with vbox}
+# build an initramfs that has kraken-layercake-vbox in it
+# note: still has non-vbox version too
+bash utils/layer0/build-layer0-base.sh -k -t /tmp/layer0-base -o layer0-vbox-base-%{GoBuildArch}.xz %{GoBuildArch} github.com/kraken-hpc/kraken-layercake/cmd/kraken-layercake-vbox
+
+%endif
+rm -rf /tmp/layer0-base
 %endif
 
 %install
@@ -113,8 +124,6 @@ install -D -m 0755 kraken-layercake-vbox %{buildroot}%{_sbindir}/kraken-layercak
 install -D -m 0644 kraken-layercake-vbox.service %{buildroot}%{_unitdir}/kraken-layercake-vbox.service
 install -D -m 0644 utils/rpm/state.json %{buildroot}%{_sysconfdir}/kraken/layercake-vbox/state.json
 install -D -m 0644 layercake-vbox-config.yaml %{buildroot}%{_sysconfdir}/kraken/layercake-vbox/config.yaml
-%endif
-%if %{with vboxapi}
 # vboxapi
 install -D -m 0755 utils/vboxapi/vboxapi %{buildroot}%{_sbindir}/vboxapi
 install -D -m 0644 vboxapi.service %{buildroot}%{_unitdir}/vboxapi.service
@@ -122,7 +131,10 @@ install -D -m 0644 vboxapi.environment %{buildroot}%{_sysconfdir}/sysconfig/vbox
 %endif
 %if %{with initramfs}
 # initramfs
-install -D -m 0644 initramfs-base-%{GoBuildArch}.gz %{buildroot}/tftp/initramfs-base-%{GoBuildArch}.gz
+install -D -m 0644 layer0-base-%{GoBuildArch}.xz %{buildroot}/tftp/layer0-base-%{GoBuildArch}.xz
+%if %{with vbox}
+install -D -m 0644 layer0-vbox-base-%{GoBuildArch}.xz %{buildroot}/tftp/layer0-vbox-base-%{GoBuildArch}.xz
+%endif
 %endif
 
 %files
@@ -140,9 +152,7 @@ install -D -m 0644 initramfs-base-%{GoBuildArch}.gz %{buildroot}/tftp/initramfs-
 %config(noreplace) %{_sysconfdir}/kraken/layercake-vbox/state.json
 %config(noreplace) %{_sysconfdir}/kraken/layercake-vbox/config.yaml
 %{_unitdir}/kraken-layercake-vbox.service
-%endif
 
-%if %{with vboxapi}
 %files vboxapi
 %license LICENSE
 %{_sbindir}/vboxapi
@@ -153,11 +163,21 @@ install -D -m 0644 initramfs-base-%{GoBuildArch}.gz %{buildroot}/tftp/initramfs-
 %if %{with initramfs}
 %files initramfs-%{GoBuildArch}
 %license LICENSE
-/tftp/initramfs-base-%{GoBuildArch}.gz
+/tftp/layer0-base-%{GoBuildArch}.xz
+%if %{with vbox}
+%files initramfs-vbox-%{GoBuildArch}
+%license LICENSE
+/tftp/layer0-vbox-base-%{GoBuildArch}.xz
+%endif
 %endif
 
 %changelog
-* Wed Mar 24 2021 J. Lowell Wofford <lowelL@lanl.gov> 0.1.0-rc0
+* Fri Mar 26 2021 J. Lowell Wofford <lowell@lanl.gov> 0.1.0-rc1
+- Combine vbox and vboxapi options into one vbox option for all vbox-related packages
+- Fix initramfs building
+- Build an initramfs-vbox-base if vbox is specified
+
+* Wed Mar 24 2021 J. Lowell Wofford <lowell@lanl.gov> 0.1.0-rc0
 - Migrate to kraken-layercake from kraken
 - Build/install kraken-layercake-vbox if vbox is specified
 - Remove the depricated powermanapi

@@ -11,7 +11,7 @@
 ###
 
 usage() {
-        echo "Usage: $0 [-kh] [-o <out_file>] [-b <base_dir>] [ -t <tmp_dir> ] <arch> [<additional_go_cmd> ...]"
+        echo "Usage: $0 [-xkh] [-o <out_file>] [-b <base_dir>] [ -t <tmp_dir> ] <arch> [<additional_go_cmd> ...]"
         echo "  <arch> should be the GOARCH we want to build (e.g. arm64, amd64...)"
         echo "  <out_file> is the file the image should be written to.  (default: layer0-00-base.<date>.<arch>.cpio.xz)"
         echo "  <base_dir> is an optional base directory containing file/directory structure (default: none)"
@@ -19,6 +19,7 @@ usage() {
         echo "  <tmp_dir> is a temporary directory to use.  This can be used to resume a previous build"
         echo "            IMPORTANT: tmp_dir cannot sit inside of a moduled go directory!"
         echo "  <additional_go_cmd> is a go cmd path spec that should be built into the busybox"
+        echo "  [-x] don't include the default list of extra commands (u-root commands only)"
         echo "  [-k] keep temporary directory (do not delete)"
         echo "  [-h] display this usage information and exit"
 }
@@ -35,6 +36,7 @@ if ! opts=$(getopt o:b:t:kh "$@"); then
 fi
 
 DELETE_TMPDIR=1
+NO_EXTRAS=0
 # shellcheck disable=SC2086
 set -- $opts
 for i; do
@@ -58,6 +60,9 @@ for i; do
         -k) echo "Will not delete temporary directory at the end"
             DELETE_TMPDIR=0
             shift;;
+        -x) echo "Will not include default extra commands"
+            NO_EXTRAS=1
+            shift;;
         --)
             shift; break;;
     esac
@@ -73,12 +78,14 @@ shift
 
 # Commands to build into u-root busybox
 EXTRA_COMMANDS=()
-EXTRA_COMMANDS+=( github.com/kraken-hpc/kraken-layercake/cmd/kraken-layercake )
-EXTRA_COMMANDS+=( github.com/kraken-hpc/uinit/cmds/uinit )
-EXTRA_COMMANDS+=( github.com/kraken-hpc/imageapi/cmd/imageapi-server )
-EXTRA_COMMANDS+=( github.com/jlowellwofford/entropy/cmd/entropy )
-EXTRA_COMMANDS+=( github.com/bensallen/modscan/cmd/modscan )
-EXTRA_COMMANDS+=( github.com/bensallen/rbd/cmd/rbd )
+if [ $NO_EXTRAS -eq 0 ]; then
+    EXTRA_COMMANDS+=( github.com/kraken-hpc/kraken-layercake/cmd/kraken-layercake )
+    EXTRA_COMMANDS+=( github.com/kraken-hpc/uinit/cmds/uinit )
+    EXTRA_COMMANDS+=( github.com/kraken-hpc/imageapi/cmd/imageapi-server )
+    EXTRA_COMMANDS+=( github.com/jlowellwofford/entropy/cmd/entropy )
+    EXTRA_COMMANDS+=( github.com/bensallen/modscan/cmd/modscan )
+    EXTRA_COMMANDS+=( github.com/bensallen/rbd/cmd/rbd )
+fi
 
 while (( "$#" )); do 
     echo "Adding command $1"
@@ -90,7 +97,7 @@ UROOT="github.com/u-root/u-root"
 
 # make a temporary directory for our base
 if [ -z ${TMPDIR+x} ]; then
-    TMPDIR="$PWD/$(mktemp -tmpdir -d layer0-base.XXXXXXXXXXXX)"
+    TMPDIR="$(mktemp --tmpdir -d layer0-base.XXXXXXXXXXXX)"
 else 
     if [ ! -d "$TMPDIR" ]; then
         echo "Creating $TMPDIR"
@@ -116,18 +123,21 @@ for c in "${EXTRA_COMMANDS[@]}"; do
     EXTRA_MODS+=( "$MOD" )
 done
 
+# make our extra mods list unique
+# shellcheck disable=SC2207
+IFS=$'\n' EXTRA_MODS=($( sort -u <<<"${EXTRA_MODS[*]}")); unset IF
+
 # fixup mod deps
-for c in "${EXTRA_COMMANDS[@]}"; do
-    (
-        cd "$GOPATH/src/$c" || fatal "couldn't cd to $GOPATH/src/$c"
-        if [ -d "vendor" ]; then
-            echo "Removing vendor folder $PWD/vendor"
-            rm -rf "$PWD/vendor"
-        fi
-        for m in "${EXTRA_MODS[@]}"; do 
-            go mod edit -replace="$m=$GOPATH/src/$m"
-        done
-    )
+for m in "${EXTRA_MODS[@]}"; do
+    echo "Processing module $m"
+    cd "$GOPATH/src/$m" || fatal "couldn't cd to $GOPATH/src/$m"
+    if [ -d "vendor" ]; then
+        echo "Removing vendor folder $PWD/vendor"
+        rm -rf "$PWD/vendor"
+    fi
+    for mm in "${EXTRA_MODS[@]}"; do 
+        go mod edit -replace="$mm=$GOPATH/src/$mm"
+    done
 done
 
 # Check that gobusybox is installed, clone it if not
@@ -152,7 +162,7 @@ done
 # Create BusyBox binary (outside of u-root)
 echo "Creating BusyBox binary..."
 mkdir -p "$TMPDIR"/base/bbin
-printf "Command list: %s" "${BB_COMMANDS[@]}"
+printf "Command list: %s\n" "${BB_COMMANDS[@]}"
 # shellcheck disable=SC2068
 "$GOPATH"/bin/makebb -o "$TMPDIR"/base/bbin/bb ${BB_COMMANDS[@]} || fatal "makebb: failed to create BusyBox binary"
 

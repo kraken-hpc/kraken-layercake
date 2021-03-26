@@ -27,7 +27,7 @@ jobs:
           command: |
             cd cmd/kraken-layercake-vbox
             go build .
-# this script doesn't currently work in the circleci container (failes to mktemp with "invalid option -m")
+# this test currently does not work because the container doesn't have cpio
 #      - run:
 #          name: Build layer0-base
 #          command: |
