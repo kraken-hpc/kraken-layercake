@@ -100,14 +100,15 @@ GOARCH=%{GoBuildArch} go build ./cmd/kraken-layercake
 
 %if %{with initramfs}
 # build initramfs
-bash utils/layer0/build-layer0-base.sh -o layer0-base-%{GoBuildArch}.xz %{GoBuildArch}
+bash utils/layer0/build-layer0-base.sh -k -t /tmp/layer0-base -o layer0-base-%{GoBuildArch}.xz %{GoBuildArch}
 
 %if %{with vbox}
 # build an initramfs that has kraken-layercake-vbox in it
 # note: still has non-vbox version too
-bash utils/layer0/build-layer0-base.sh -o layer0-vbox-base-%{GoBuildArch}.xz %{GoBuildArch} github.com/kraken-hpc/kraken-layercake/cmd/kraken-layercake-vbox
+bash utils/layer0/build-layer0-base.sh -k -t /tmp/layer0-base -o layer0-vbox-base-%{GoBuildArch}.xz %{GoBuildArch} github.com/kraken-hpc/kraken-layercake/cmd/kraken-layercake-vbox
 
 %endif
+#rm -rf /tmp/layer0-base
 %endif
 
 %install
@@ -130,9 +131,9 @@ install -D -m 0644 vboxapi.environment %{buildroot}%{_sysconfdir}/sysconfig/vbox
 %endif
 %if %{with initramfs}
 # initramfs
-install -D -m 0644 initramfs-base-%{GoBuildArch}.xz %{buildroot}/tftp/layer0-base-%{GoBuildArch}.xz
+install -D -m 0644 layer0-base-%{GoBuildArch}.xz %{buildroot}/tftp/layer0-base-%{GoBuildArch}.xz
 %if %{with vbox}
-install -D -m 0644 initramfs-vbox-base-%{GoBuildArch}.xz %{buildroot}/tftp/layer0-vbox-base-%{GoBuildArch}.xz
+install -D -m 0644 layer0-vbox-base-%{GoBuildArch}.xz %{buildroot}/tftp/layer0-vbox-base-%{GoBuildArch}.xz
 %endif
 %endif
 
@@ -162,11 +163,11 @@ install -D -m 0644 initramfs-vbox-base-%{GoBuildArch}.xz %{buildroot}/tftp/layer
 %if %{with initramfs}
 %files initramfs-%{GoBuildArch}
 %license LICENSE
-/tftp/layer0-base-%{GoBuildArch}.gz
+/tftp/layer0-base-%{GoBuildArch}.xz
 %if %{with vbox}
 %files initramfs-vbox-%{GoBuildArch}
 %license LICENSE
-/tftp/layer0-vbox-base-%{GoBuildArch}.gz
+/tftp/layer0-vbox-base-%{GoBuildArch}.xz
 %endif
 %endif
 
