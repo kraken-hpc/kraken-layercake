@@ -116,16 +116,20 @@ for c in "${EXTRA_COMMANDS[@]}"; do
     EXTRA_MODS+=( "$MOD" )
 done
 
+# make our extra mods list unique
+# shellcheck disable=SC2207
+IFS=$'\n' EXTRA_MODS=($( sort -u <<<"${EXTRA_MODS[*]}")); unset IF
+
 # fixup mod deps
-for c in "${EXTRA_COMMANDS[@]}"; do
+for m in "${ETRA_MODS[@]}"; do
     (
-        cd "$GOPATH/src/$c" || fatal "couldn't cd to $GOPATH/src/$c"
+        cd "$GOPATH/src/$m" || fatal "couldn't cd to $GOPATH/src/$m"
         if [ -d "vendor" ]; then
             echo "Removing vendor folder $PWD/vendor"
             rm -rf "$PWD/vendor"
         fi
-        for m in "${EXTRA_MODS[@]}"; do 
-            go mod edit -replace="$m=$GOPATH/src/$m"
+        for mm in "${EXTRA_MODS[@]}"; do 
+            go mod edit -replace="$mm=$GOPATH/src/$mm"
         done
     )
 done
