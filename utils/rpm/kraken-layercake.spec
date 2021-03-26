@@ -108,7 +108,7 @@ bash utils/layer0/build-layer0-base.sh -k -t /tmp/layer0-base -o layer0-base-%{G
 bash utils/layer0/build-layer0-base.sh -k -t /tmp/layer0-base -o layer0-vbox-base-%{GoBuildArch}.xz %{GoBuildArch} github.com/kraken-hpc/kraken-layercake/cmd/kraken-layercake-vbox
 
 %endif
-#rm -rf /tmp/layer0-base
+rm -rf /tmp/layer0-base
 %endif
 
 %install
