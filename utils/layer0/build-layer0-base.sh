@@ -179,31 +179,39 @@ if [ -n "${BASEDIR+x}" ]; then
         rsync -av "$BASEDIR"/ "$TMPDIR"/base
 fi
 
-echo "Creating base cpio..."
+echo "Creating compressed cpio..."
 (
     cd "$TMPDIR"/base || exit 1
-    find . | cpio -oc > "$TMPDIR"/base.cpio
+    # set up a few symlinks that we need
+    ln -s bbin/init init
+    mkdir bin
+    cd bin
+    ln -s ../bbin/elvish defaultsh
+    ln -s ../bbin/elvish sh
+    ln -s ../bbin/uinit uinit
+    cd "$TMPDIR/base"
+    find . | cpio -oc > "$TMPDIR"/initramfs.cpio
 ) || fatal "Creating base cpio failed"
-
-echo "Creating image..."
-# shellcheck disable=SC2068
-GOARCH="$ARCH" "$GOPATH"/bin/u-root -nocmd -initcmd=/bbin/init -uinitcmd=/bbin/uinit -defaultsh=/bbin/elvish -base "$TMPDIR"/base.cpio -o "$TMPDIR"/initramfs.cpio 2>&1
 
 echo "CONTENTS:"
 cpio -itv < "$TMPDIR"/initramfs.cpio
 
 echo "Compressing..."
-xz "$TMPDIR"/initramfs.cpio
+cd "$TMPDIR" || fatal "could not cd to $TMPDIR"
+xz initramfs.cpio
 
 if [ -z "${OUTFILE+x}" ]; then
     D=$(date +%Y%m%d.%H%M)
     OUTFILE="layer0-00-base.${D}.${ARCH}.cpio.xz"
 fi
-mv -v "$TMPDIR"/initramfs.cpio.xz "$ORIG_PWD"/"$OUTFILE"
+cd "$OREIG_PWD" || fatal "could not cd to $ORIG_PWD"
+cp -v "$TMPDIR"/initramfs.cpio.xz "$OUTFILE"
 
 if [ $DELETE_TMPDIR -eq 1 ]; then
     echo "Removing temporary directory"
-    rm -rf "$TMPDIR"
+    rm -rf "$TMPDIR" || falal "failed to remove $TMPDIR"
 fi
 
 echo "Image built as $OUTFILE"
+
+echo "Done."

@@ -172,4 +172,9 @@ find . | cpio -oc | xz -c > "$ORIG_PWD"/"$OUTFILE" || fatal "failed to compresse
 
 if [ $DELETE_TMPDIR -eq 1 ]; then
    echo "Cleaning up $TMPDIR"
+   rm -rf "$TMPDIR" || fatal "failed to remove $TMPDIR"
 fi
+
+echo "Image built as $OUTFILE"
+
+echo "Done."
