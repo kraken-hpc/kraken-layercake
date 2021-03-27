@@ -197,13 +197,15 @@ echo "CONTENTS:"
 cpio -itv < "$TMPDIR"/initramfs.cpio
 
 echo "Compressing..."
-xz "$TMPDIR"/initramfs.cpio
+cd "$TMPDIR" || fatal "could not cd to $TMPDIR"
+xz initramfs.cpio
 
 if [ -z "${OUTFILE+x}" ]; then
     D=$(date +%Y%m%d.%H%M)
     OUTFILE="layer0-00-base.${D}.${ARCH}.cpio.xz"
 fi
-mv -v "$TMPDIR"/initramfs.cpio.xz "$ORIG_PWD"/"$OUTFILE"
+cd "$OREIG_PWD" || fatal "could not cd to $ORIG_PWD"
+cp -v "$TMPDIR"/initramfs.cpio.xz "$OUTFILE"
 
 if [ $DELETE_TMPDIR -eq 1 ]; then
     echo "Removing temporary directory"
