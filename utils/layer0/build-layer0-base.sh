@@ -179,15 +179,19 @@ if [ -n "${BASEDIR+x}" ]; then
         rsync -av "$BASEDIR"/ "$TMPDIR"/base
 fi
 
-echo "Creating base cpio..."
+echo "Creating compressed cpio..."
 (
     cd "$TMPDIR"/base || exit 1
-    find . | cpio -oc > "$TMPDIR"/base.cpio
+    # set up a few symlinks that we need
+    ln -s bbin/init init
+    mkdir bin
+    cd bin
+    ln -s ../bbin/elvish defaultsh
+    ln -s ../bbin/elvish sh
+    ln -s ../bbin/uinit uinit
+    cd "$TMPDIR/base"
+    find . | cpio -oc > "$TMPDIR"/initramfs.cpio
 ) || fatal "Creating base cpio failed"
-
-echo "Creating image..."
-# shellcheck disable=SC2068
-GOARCH="$ARCH" "$GOPATH"/bin/u-root -nocmd -initcmd=/bbin/init -uinitcmd=/bbin/uinit -defaultsh=/bbin/elvish -base "$TMPDIR"/base.cpio -o "$TMPDIR"/initramfs.cpio 2>&1
 
 echo "CONTENTS:"
 cpio -itv < "$TMPDIR"/initramfs.cpio
