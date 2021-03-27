@@ -20,6 +20,7 @@ require (
 	github.com/pin/tftp v2.1.0+incompatible
 	github.com/satori/go.uuid v1.2.0
 	golang.org/x/net v0.0.0-20210324051636-2c4c8ecb7826
+	golang.org/x/sys v0.0.0-20210326220804-49726bf1d181 // indirect
 	google.golang.org/grpc v1.36.0
 	gopkg.in/yaml.v2 v2.4.0
 )

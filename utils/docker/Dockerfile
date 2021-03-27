@@ -34,6 +34,7 @@ RUN apk add --no-cache \
       openssh \
       openssh-keygen \
       xz \
+      rsync \
       bash 
 
 # build kraken-layercake
@@ -52,12 +53,11 @@ RUN mkdir -p /tftp/amd64/powerapi/pxelinux.cfg \
 # note: we have to use -t because `mktemp` is not gnu compliant
 RUN bash utils/layer0/build-layer0-base.sh -o /tftp/amd64/powerapi/layer0-base.xz -t /tmp/layer0-base "$GOARCH"
 
-# build layer0-kmod & layer0-config (stubs)
+# build layer0-config (stubs)
 RUN cp -av utils/docker/config /tftp/layer0/config \
     && ssh-keygen -N "" -t rsa -b 4096 -f /root/.ssh/cluster \
     && cp -av /root/.ssh/cluster.pub /tftp/layer0/config/authorized_keys \
-    && cd /tftp/layer0/config \
-    && find . | cpio -oc | xz -c > /tftp/amd64/powerapi/layer0-config.xz
+    && bash utils/layer0/build-layer0-config.sh -t /tmp/layer0-config -o /tftp/amd64/powerapi/layer0-conf.xz /tftp/layer0/config
 
 ENTRYPOINT [ "/sbin/kraken-layercake" ]
 CMD [ "-h" ]

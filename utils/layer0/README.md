@@ -50,18 +50,33 @@ Usage: build-layer0-kmod.sh [-kha] [-o <out_file>] [-c <chroot_dir>] [-t <tmp_di
   [-h] display this usage information and exit
 ```
 
+### build-layer0-config.sh
+
+This is a helper script to create a config overlay bundle.  This script is much simpler than the other build scripts.  It takes a directory of files (config files, typically, but really anything), and builds a comppressed cpio from them.  `build-layer0-config.sh` can also take a list of directories and layer them on top of each other before building the compressed cpio.
+
+The options for `build-layer0-kmod.sh` are:
+```bash
+$ bash build-layer0-config.sh -h
+Usage: build-layer0-config.sh [-kh] [-o <out_file>] [-t <tmp_dir>] <dir> [<dir> ...][
+   <out_file> file the image shoudl be written to. (default: layer0-20-config.xz)
+   <tmp_dir> is a temporary directory to use.
+   <dir> directory containing the config files to overlay. Any additonal directories will be overlayed in order.
+  [-k] keep termporary directory (do not delete)
+  [-h] display this usage information and exit
+```
+
 ## Instructions for building a Layer0
 
 In general, you need three steps:
 1) run `build-layer0-base.sh`
 2) run `build-layer0-kmod.sh`
-3) Create a config set bundle:
+3) Create a config set directory:
    1) make a directory
    2) put files you want to overaly in that directory, including:
       1) `uinit.script` (mandatory)
       2) `authorized_keys` (a very good idea)
       3) any other config files you want your minOS to have (`/etc/hosts`, `/etc/passwd`, `/etc/group` are good ideas, for one)
-   3) create a bundle with `cd <your_directory> ; find . | cpio -oc | xz -c > <your_config_overlay>.cpio.xz` 
+   3) create a bundle by running `build-layer0-config.sh` on the config set directory.
 4) Finally, make sure you specify these in `initramfs=<base>,<kmod>,<conf>` on the kernel commandline (`pxelinux.cfg/default.tpl`, probably)
 
 ***IMPORTANT***: Without a `uinit.script` your Layer0 won't do anything.  Look at the examples or the project [uinit](https://github.com/kraken-hpc/uinit) for details.
