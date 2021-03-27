@@ -18,7 +18,7 @@ fatal() {
    exit 1
 }
 
-if ! opts=$(getopt o: "$@"); then
+if ! opts=$(getopt o:t:hk "$@"); then
    usage
    exit
 fi
