@@ -203,7 +203,9 @@ mv -v "$TMPDIR"/initramfs.cpio.xz "$ORIG_PWD"/"$OUTFILE"
 
 if [ $DELETE_TMPDIR -eq 1 ]; then
     echo "Removing temporary directory"
-    rm -rf "$TMPDIR"
+    rm -rf "$TMPDIR" || falal "failed to remove $TMPDIR"
 fi
 
 echo "Image built as $OUTFILE"
+
+echo "Done."
