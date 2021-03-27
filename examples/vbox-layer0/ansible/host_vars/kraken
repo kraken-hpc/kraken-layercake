@@ -1,8 +1,11 @@
 ---
-kr_src_dir: "/home/vagrant/go/src/{{ kr_url }}"
-kr_conf_file: "{{ kr_src_dir }}/config/vbox_uroot.yaml"
-kr_target: "u-root"
-kr_img_build_script: "{{ kr_src_dir }}/utils/layer0/buildlayer0_uroot.sh"
+hosts:
+  - { ip: 192.168.57.1, hostnames: [ vboxmanage, vboxmanage.local ]}
+  - { ip: 10.11.12.1, hostnames: [ kraken ]}
+  - { ip: 10.11.12.11, hostnames: [ kr1 ]}
+  - { ip: 10.11.12.12, hostnames: [ kr2 ]}
+  - { ip: 10.11.12.13, hostnames: [ kr3 ]}
+  - { ip: 10.11.12.14, hostnames: [ kr4 ]}
 
 
 kraken_parent_id: "123e4567-e89b-12d3-a456-426655440000"
