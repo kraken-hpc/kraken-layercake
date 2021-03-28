@@ -7,19 +7,19 @@
  * See LICENSE file for details.
  */
 
-package vbox
+package hypervisor
 
 import (
 	"github.com/kraken-hpc/kraken/core"
 	"github.com/kraken-hpc/kraken/lib/types"
 )
 
-//go:generate protoc -I ../../kraken/core/proto/src -I . --gogo_out=plugins=grpc:. vbox.proto
+//go:generate protoc -I ../../kraken/core/proto/src -I . --gogo_out=plugins=grpc:. hypervisor.proto
 
-const Name = "type.googleapis.com/VBox.VirtualMachine"
+const Name = "type.googleapis.com/Hypervisor.VirtualMachine"
 
 /////////////////
-// VBox Object /
+// VirtualMachine Object /
 ///////////////
 
 var _ types.Extension = (*VirtualMachine)(nil)

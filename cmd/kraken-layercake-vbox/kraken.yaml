@@ -3,7 +3,7 @@ extensions:
   - github.com/kraken-hpc/kraken/extensions/ipv4
   - github.com/kraken-hpc/kraken-layercake/extensions/imageapi
   - github.com/kraken-hpc/kraken-layercake/extensions/pxe
-  - github.com/kraken-hpc/kraken-layercake/extensions/vbox
+  - github.com/kraken-hpc/kraken-layercake/extensions/hypervisor
 
 # included modules
 modules:

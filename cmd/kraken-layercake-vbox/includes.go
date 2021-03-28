@@ -12,13 +12,13 @@ package main
 // Extensions
 
 import (
+	_ "github.com/kraken-hpc/kraken-layercake/extensions/hypervisor"
+
 	_ "github.com/kraken-hpc/kraken-layercake/extensions/imageapi"
 
 	_ "github.com/kraken-hpc/kraken/extensions/ipv4"
 
 	_ "github.com/kraken-hpc/kraken-layercake/extensions/pxe"
-
-	_ "github.com/kraken-hpc/kraken-layercake/extensions/vbox"
 
 	// Modules
 
