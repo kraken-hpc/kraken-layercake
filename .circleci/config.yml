@@ -23,9 +23,9 @@ jobs:
             cd cmd/kraken-layercake
             go build .
       - run:
-          name: Run build kraken-layerake-vbox
+          name: Run build kraken-layerake-virt
           command: |
-            cd cmd/kraken-layercake-vbox
+            cd cmd/kraken-layercake-virt
             go build .
 # this test currently does not work because the container doesn't have cpio
 #      - run:

@@ -26,7 +26,7 @@ To build the images:
    ...
    ```
    This will build an image named `layercake`.
-   To build for vbox, simply use `-f utils/docker/Dockerfile.vbox` instead.
+   To build for VirtualBox and Libvirt support, use `-f utils/docker/Dockerfile.virt` instead.
 
 # Running
 

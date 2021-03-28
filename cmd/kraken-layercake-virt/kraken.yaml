@@ -11,4 +11,5 @@ modules:
   - github.com/kraken-hpc/kraken/modules/websocket
   - github.com/kraken-hpc/kraken-layercake/modules/imageapi
   - github.com/kraken-hpc/kraken-layercake/modules/pxe
+  - github.com/kraken-hpc/kraken-layercake/modules/libvirt
   - github.com/kraken-hpc/kraken-layercake/modules/vboxmanage

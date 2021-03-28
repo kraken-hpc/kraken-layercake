@@ -25,7 +25,6 @@ ARG GOARCH="${GOARCH:-amd64}"
 ARG GOOS="${GOOS:-linux}"
 WORKDIR "/src"
 COPY . .
-
 # install package dependencies
 RUN apk add --no-cache \
       syslinux \
@@ -39,18 +38,18 @@ RUN apk add --no-cache \
 # build kraken-layercake
 RUN env \
     && go mod download \
-    && go build ./cmd/kraken-layercake-vbox \
-    && cp -v kraken-layercake /sbin/kraken-layercake-vbox
+    && go build -o kraken-layercake ./cmd/kraken-layercake-virt \
+    && cp -v kraken-layercake /sbin/kraken-layercake
 
 # setup tftp
-RUN mkdir -p /tftp/amd64/vbox/pxelinux.cfg \
-    && cp -av utils/docker/pxelinux-default.tpl /tftp/amd64/vbox/pxelinux.cfg/default.tpl \
-    && cp -av /usr/share/syslinux/* /tftp/amd64/vbox \
+RUN mkdir -p /tftp/amd64/virt/pxelinux.cfg \
+    && cp -av utils/docker/pxelinux-default.tpl /tftp/amd64/virt/pxelinux.cfg/default.tpl \
+    && cp -av /usr/share/syslinux/* /tftp/amd64/virt \
     && cp -av utils/layer0 /tftp/layer0
 
 # build layer0-base
 # note: we have to use -t because `mktemp` is not gnu compliant
-RUN bash utils/layer0/build-layer0-base.sh -o /tftp/amd64/vbox/layer0-base.xz -t /tmp/layer0-base "$GOARCH" github.com/kraken-hpc/kraken-layercake/cmd/kraken-layercake-vbox
+RUN bash utils/layer0/build-layer0-base.sh -o /tftp/amd64/virt/layer0-base.xz -t /tmp/layer0-base "$GOARCH" github.com/kraken-hpc/kraken-layercake/cmd/kraken-layercake-virt
 
 # build layer0-kmod & layer0-config (stubs)
 RUN cp -av utils/docker/config /tftp/layer0/config \
