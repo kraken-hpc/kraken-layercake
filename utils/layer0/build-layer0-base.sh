@@ -13,14 +13,15 @@
 usage() {
         echo "Usage: $0 [-xkh] [-o <out_file>] [-b <base_dir>] [ -t <tmp_dir> ] <arch> [<additional_go_cmd> ...]"
         echo "  <arch> should be the GOARCH we want to build (e.g. arm64, amd64...)"
-        echo "  <out_file> is the file the image should be written to.  (default: layer0-00-base.<date>.<arch>.cpio.xz)"
+        echo "  <out_file> is the file the image should be written to.  (default: layer0-00-base.<date>.<arch>.cpio.<xz|gz>)"
         echo "  <base_dir> is an optional base directory containing file/directory structure (default: none)"
         echo "             that should be added to the image"
         echo "  <tmp_dir> is a temporary directory to use.  This can be used to resume a previous build"
         echo "            IMPORTANT: tmp_dir cannot sit inside of a moduled go directory!"
         echo "  <additional_go_cmd> is a go cmd path spec that should be built into the busybox"
-        echo "  [-x] don't include the default list of extra commands (u-root commands only)"
+        echo "  [-g] use gzip instead of xz (needed for kernels with no xz support)"
         echo "  [-k] keep temporary directory (do not delete)"
+        echo "  [-x] don't include the default list of extra commands (u-root commands only)"
         echo "  [-h] display this usage information and exit"
 }
 
@@ -30,13 +31,14 @@ fatal() {
     exit 1
 }
 
-if ! opts=$(getopt o:b:t:s:kh "$@"); then
+if ! opts=$(getopt o:b:t:s:khg "$@"); then
     usage
     exit
 fi
 
 DELETE_TMPDIR=1
 NO_EXTRAS=0
+COMPRESS=xz
 # shellcheck disable=SC2086
 set -- $opts
 for i; do
@@ -66,6 +68,9 @@ for i; do
             shift;;
         -x) echo "Will not include default extra commands"
             NO_EXTRAS=1
+            shift;;
+        -g) echo "Will use gzip instead of xz"
+            COMPRESS=gzip
             shift;;
         --)
             shift; break;;
@@ -188,30 +193,41 @@ if [ -n "${BASEDIR+x}" ]; then
         rsync -av "$BASEDIR"/ "$TMPDIR"/base
 fi
 
-echo "Creating cpio..."
+# This is a base64 encoded, xz compressed, cpio archive containing a base layout, including some needed /dev files. 
+# We do things this way becaus mknod would require root...
+BASE_CPIO="
+/Td6WFoAAATm1rRGAgAhARYAAAB0L+Wj4A3/AcFdABgN3QRjgyGJVkSLq3d0shQB2nQReynjYMQw
+77oVeKcTnLDjVK5OpziQw9hy0vSVvlvOkmft5kSd/zAwOh3h6dI3tLs+EaYXa4lFIUk2+EklHloP
+AlWj1b3DF0EQgMcWh2P6UPiPMfLboIIBUOtgG9oQxao05a7/i4ooIxjTccgrxoBhLLbCHIecp4Ny
+iWRyEWKihohGlpqS6syhtecTjlCRqXB2R+9Ydn/Z4zovsGhfFWduJQJQWPIBMXLI6SB5gqyGV0zF
+lZl8nrV4lWihUbwCrWKc8GVDZoEZAGOmoN6hLLhaHa1qvdrn2wY4bml0mLWnlYbvAKjAXS5mpKKo
+WznhUKTLFVdvvng7w4t66HGkuPIBllPx9OzczkM1jmRriosAP5MfKd1ydMsYKEg41DOjiM8P3sSr
+NXe91+DqcB5mK8qoxJHJfzUzxADVNmEbRp+hOXQi8nn8uZ/7MkNEn5p6RR3xet8TogU+cLEwi4Dt
+9HcHmiSXyInr1WruElbVQpIME0iaI4BOuooTad6m8QQbC9FtZmLlcMzkwNVpGmvs1jruIfsnp0T/
+buA4M6Uh9D1HmX9misWtPqoDwz8hQsNAAAAAAP0Z0g6A788pAAHdA4AcAADTTTDSscRn+wIAAAAA
+BFla
+"
+
+echo "Extracting cpio base..."
+echo "$BASE_CPIO" | base64 -di - | xz -dc > "$TMPDIR/initramfs.cpio" || fatal "failed to extract base cpio"
+
+echo "Creating compressed cpio..."
 (
-    cd "$TMPDIR"/base || exit 1
-    # set up a few symlinks that we need
-    ln -s bbin/init init
-    mkdir bin
-    cd bin
-    ln -s ../bbin/elvish defaultsh
-    ln -s ../bbin/elvish sh
-    ln -s ../bbin/uinit uinit
     cd "$TMPDIR/base"
-    find . | cpio --file="$TMPDIR"/initramfs.cpio -ocv
+    find . | cpio -ocA -R root:root -O "$TMPDIR/initramfs.cpio"
 ) || fatal "Creating base cpio failed"
 
 echo "Compressing..."
 cd "$TMPDIR" || fatal "could not cd to $TMPDIR"
-xz --threads=0 initramfs.cpio
+EXTENSION=$([[ $COMPRESS == "xz" ]] && echo "xz" || echo "gz" )
+$COMPRESS initramfs.cpio
 
 if [ -z "${OUTFILE+x}" ]; then
     D=$(date +%Y%m%d.%H%M)
-    OUTFILE="layer0-00-base.${D}.${ARCH}.cpio.xz"
+    OUTFILE="layer0-00-base.${D}.${ARCH}.cpio.$EXTENSION"
 fi
 cd "$ORIG_PWD" || fatal "could not cd to $ORIG_PWD"
-cp -v "$TMPDIR"/initramfs.cpio.xz "$OUTFILE" || fatal "failed to copy archive to $ORIG_PWD"
+cp -v "$TMPDIR/initramfs.cpio.$EXTENSION" "$OUTFILE" || fatal "failed to copy archive to $ORIG_PWD"
 
 if [ $DELETE_TMPDIR -eq 1 ]; then
     echo "Removing temporary directory"
