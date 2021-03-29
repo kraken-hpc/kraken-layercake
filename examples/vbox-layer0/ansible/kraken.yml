@@ -1,16 +1,15 @@
 ---
 - hosts: kraken
   vars:
-    kr_repo: https://github.com/kraken-hpc/kraken.git
+    kr_repo: https://github.com/kraken-hpc/kraken-layercake.git
     kr_repo_version: "main"
     kr_build_args: "-v -force"
   roles:
     - common
-    - kraken-base
-    - kraken-build
-    - kraken-tftpboot
-    - kraken-build-layer0
-    - kraken-state
-    - kraken-systemd
-    - kraken-dashboard
+    - kraken_build
+    - kraken_tftpboot
+    - kraken_build_layer0
+    - kraken_state
+    - kraken_systemd
+    - kraken_dashboard
 #    - extras
