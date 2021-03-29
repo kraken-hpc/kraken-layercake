@@ -6,7 +6,7 @@ Requires=network.target
 [Service]
 Type=notify
 WorkingDirectory=%{?KrakenWorkingDirectory}%{?!KrakenWorkingDirectory:/}
-ExecStart=%{_sbindir}/kraken-layercake-vbox -config %{_sysconfdir}/kraken/layercake/config.yaml -noprefix -sdnotify
+ExecStart=%{_sbindir}/kraken-layercake-vbox -config %{_sysconfdir}/kraken/layercake-vbox/config.yaml -noprefix -sdnotify
 
 [Install]
 WantedBy=multi-user.target
