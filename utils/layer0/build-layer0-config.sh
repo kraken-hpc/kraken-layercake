@@ -88,7 +88,7 @@ cd "$TMPDIR/root" || fatal "could not cd to $TMPDIR/root"
 find . | cpio -oc | xz -c > ../conf.cpio.xz || fatal "failed to create compressed cpio"
 
 cd "$ORIG_PWD" || fatal "failed to cd to $ORIG_PWD"
-cp -v "$TMPDIR/conf.cpio.xz" "$OUTFILE" || fatal "failed to copy bundle to $OUTFILE"
+cp -v "$TMPDIR/conf.cpio.xz" "$OUTFILE" || fatal "failed to copy archive to $OUTFILE"
 
 if [ $DELETE_TMPDIR -eq 1 ]; then
    echo "Cleaning up $TMPDIR"

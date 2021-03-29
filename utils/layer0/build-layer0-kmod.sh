@@ -168,7 +168,10 @@ fi
 
 echo "Creating compressed cpio at $OUTFILE"
 cd "$TMPDIR/root" || fatal "could not cd to $TMPDIR/root"
-find . | cpio -oc | xz -c > "$ORIG_PWD"/"$OUTFILE" || fatal "failed to compressec cpio bundle"
+find . | cpio -oc | xz -c > "$TMPDIR/kmod.cpio.xz" || fatal "failed to compressec cpio bundle"
+
+cd "$OREIG_PWD" || fatal "could not cd to $ORIG_PWD"
+cp -v "$TMPDIR"/kmod.cpio.xz "$OUTFILE" || fatal "failed to copy archive to $ORIG_PWD"
 
 if [ $DELETE_TMPDIR -eq 1 ]; then
    echo "Cleaning up $TMPDIR"

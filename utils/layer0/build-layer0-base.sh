@@ -211,7 +211,7 @@ if [ -z "${OUTFILE+x}" ]; then
     OUTFILE="layer0-00-base.${D}.${ARCH}.cpio.xz"
 fi
 cd "$ORIG_PWD" || fatal "could not cd to $ORIG_PWD"
-cp -v "$TMPDIR"/initramfs.cpio.xz "$OUTFILE"
+cp -v "$TMPDIR"/initramfs.cpio.xz "$OUTFILE" || fatal "failed to copy archive to $ORIG_PWD"
 
 if [ $DELETE_TMPDIR -eq 1 ]; then
     echo "Removing temporary directory"
