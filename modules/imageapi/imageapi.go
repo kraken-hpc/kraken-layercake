@@ -7,7 +7,7 @@
  * See LICENSE file for details.
  */
 
-//go:generate protoc -I ../../core/proto/src -I . --gogo_out=plugins=grpc:. imageapi-config.proto
+//go:generate protoc -I ../../kraken/core/proto/src -I . --gogo_out=plugins=grpc:. imageapi-config.proto
 
 /*
  * This module will manipulate all or most of the Image extension fields.

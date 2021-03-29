@@ -14,7 +14,7 @@ import (
 	"github.com/kraken-hpc/kraken/lib/types"
 )
 
-//go:generate protoc -I ../../core/proto/src -I proto/ --gogo_out=plugins=grpc:. proto/imageapi.proto proto/generated.proto
+//go:generate protoc -I ../../kraken/core/proto/src -I proto/ --gogo_out=plugins=grpc:. proto/imageapi.proto proto/generated.proto
 
 const Name = "type.googleapis.com/ImageAPI.ImageSet"
 
