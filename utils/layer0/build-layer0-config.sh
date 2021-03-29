@@ -44,7 +44,7 @@ for i; do
       -k)
          echo "Will not delete temporary directory at the end"
          DELETE_TMPDIR=0
-         shift; shift;;
+         shift;;
       --)
          shift; break;;
    esac
