@@ -20,7 +20,7 @@ kraken_nodes:
     'parentid': "{{ kraken_parent_id }}"
     'runstate': "{{ kraken_default_runstate }}"
     'extensions':
-      'VBox':
+      'Hypervisor':
         "apiServer": "vbm"
         "name": "kr1"
       'IPv4OverEthernet':
@@ -37,7 +37,7 @@ kraken_nodes:
     'parentid': "{{ kraken_parent_id }}"
     'runstate': "{{ kraken_default_runstate }}"
     'extensions':
-      'VBox':
+      'Hypervisor':
         "apiServer": "vbm"
         "name": "kr2"
       'IPv4OverEthernet':
@@ -54,7 +54,7 @@ kraken_nodes:
     'parentid': "{{ kraken_parent_id }}"
     'runstate': "{{ kraken_default_runstate }}"
     'extensions':
-      'VBox':
+      'Hypervisor':
         "apiServer": "vbm"
         "name": "kr3"
       'IPv4OverEthernet':
@@ -71,7 +71,7 @@ kraken_nodes:
     'parentid': "{{ kraken_parent_id }}"
     'runstate': "{{ kraken_default_runstate }}"
     'extensions':
-      'VBox':
+      'Hypervisor':
         "apiServer": "vbm"
         "name": "kr4"
       'IPv4OverEthernet':
