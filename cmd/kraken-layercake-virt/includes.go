@@ -22,6 +22,8 @@ import (
 
 	// Modules
 
+	_ "github.com/kraken-hpc/kraken-layercake/modules/libvirt"
+
 	_ "github.com/kraken-hpc/kraken-layercake/modules/imageapi"
 
 	_ "github.com/kraken-hpc/kraken-layercake/modules/pxe"
