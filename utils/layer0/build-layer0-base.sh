@@ -30,7 +30,7 @@ fatal() {
     exit 1
 }
 
-if ! opts=$(getopt o:b:t:kh "$@"); then
+if ! opts=$(getopt o:b:t:s:kh "$@"); then
     usage
     exit
 fi
@@ -56,6 +56,10 @@ for i; do
             shift; shift;;
         -t) echo "Using tmp dir $2"
             TMPDIR=$(readlink -f "$2")
+            shift; shift;;
+        -s)
+            echo "Copying local src $2"
+            LOCALSRC="$2"
             shift; shift;;
         -k) echo "Will not delete temporary directory at the end"
             DELETE_TMPDIR=0
@@ -108,6 +112,11 @@ echo "Using tmpdir: $TMPDIR"
 ORIG_PWD="$PWD"
 cd "$TMPDIR" || fatal "couldn't cd to $TMPDIR"
 GOPATH="$TMPDIR/gopath"
+
+if [ -d "${LOCALSRC}" ]; then
+    mkdir -p "${GOPATH}"/src
+    cp -a "${LOCALSRC}/." "${GOPATH}"/src/
+fi
 
 EXTRA_MODS=()
 # Make sure commands are available
@@ -179,7 +188,7 @@ if [ -n "${BASEDIR+x}" ]; then
         rsync -av "$BASEDIR"/ "$TMPDIR"/base
 fi
 
-echo "Creating compressed cpio..."
+echo "Creating cpio..."
 (
     cd "$TMPDIR"/base || exit 1
     # set up a few symlinks that we need
@@ -190,21 +199,18 @@ echo "Creating compressed cpio..."
     ln -s ../bbin/elvish sh
     ln -s ../bbin/uinit uinit
     cd "$TMPDIR/base"
-    find . | cpio -oc > "$TMPDIR"/initramfs.cpio
+    find . | cpio --file="$TMPDIR"/initramfs.cpio -ocv
 ) || fatal "Creating base cpio failed"
-
-echo "CONTENTS:"
-cpio -itv < "$TMPDIR"/initramfs.cpio
 
 echo "Compressing..."
 cd "$TMPDIR" || fatal "could not cd to $TMPDIR"
-xz initramfs.cpio
+xz --threads=0 initramfs.cpio
 
 if [ -z "${OUTFILE+x}" ]; then
     D=$(date +%Y%m%d.%H%M)
     OUTFILE="layer0-00-base.${D}.${ARCH}.cpio.xz"
 fi
-cd "$OREIG_PWD" || fatal "could not cd to $ORIG_PWD"
+cd "$ORIG_PWD" || fatal "could not cd to $ORIG_PWD"
 cp -v "$TMPDIR"/initramfs.cpio.xz "$OUTFILE"
 
 if [ $DELETE_TMPDIR -eq 1 ]; then
