@@ -5,7 +5,7 @@
 ###
 
 usage() {
-   echo "Usage: $0 [-kh] [-o <out_file>] [-t <tmp_dir>] <dir> [<dir> ...]["
+   echo "Usage: $0 [-gkh] [-o <out_file>] [-t <tmp_dir>] <dir> [<dir> ...]["
    echo "   <out_file> file the image shoudl be written to. (default: layer0-20-config.<xz|gz>)"
    echo "   <tmp_dir> is a temporary directory to use."
    echo "   <dir> directory containing the config files to overlay. Any additonal directories will be overlayed in order."

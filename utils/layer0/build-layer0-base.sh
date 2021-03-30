@@ -11,7 +11,7 @@
 ###
 
 usage() {
-        echo "Usage: $0 [-xkh] [-o <out_file>] [-b <base_dir>] [ -t <tmp_dir> ] <arch> [<additional_go_cmd> ...]"
+        echo "Usage: $0 [-gkxh] [-o <out_file>] [-b <base_dir>] [ -t <tmp_dir> ] <arch> [<additional_go_cmd> ...]"
         echo "  <arch> should be the GOARCH we want to build (e.g. arm64, amd64...)"
         echo "  <out_file> is the file the image should be written to.  (default: layer0-00-base.<date>.<arch>.cpio.<xz|gz>)"
         echo "  <base_dir> is an optional base directory containing file/directory structure (default: none)"

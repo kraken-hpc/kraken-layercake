@@ -5,7 +5,7 @@
 ###
 
 usage() {
-   echo "Usage: $0 [-kha] [-o <out_file>] [-c <chroot_dir>] [-t <tmp_dir>] [-f <mod_file>] <kernel_version> [<mod> ...]"
+   echo "Usage: $0 [-gkha] [-o <out_file>] [-c <chroot_dir>] [-t <tmp_dir>] [-f <mod_file>] <kernel_version> [<mod> ...]"
    echo "  <out_file> file the image should be written to. (default: layer0-10-kmod.<kernel_version>.cpio.xz)"
    echo "  <chroot_dir> chroot to look for kernel modules in (currently not implemented)"
    echo "  <tmp_dir> is a temporary directory to use.  This can be used to resume a previous build"
