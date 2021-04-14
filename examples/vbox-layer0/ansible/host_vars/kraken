@@ -1,9 +1,18 @@
 ---
+hosts:
+  - { ip: 192.168.57.1, hostnames: [ vboxmanage, vboxmanage.local ]}
+  - { ip: 10.11.12.1, hostnames: [ kraken ]}
+  - { ip: 10.11.12.11, hostnames: [ kr1 ]}
+  - { ip: 10.11.12.12, hostnames: [ kr2 ]}
+  - { ip: 10.11.12.13, hostnames: [ kr3 ]}
+  - { ip: 10.11.12.14, hostnames: [ kr4 ]}
+
+
 kraken_parent_id: "123e4567-e89b-12d3-a456-426655440000"
 kraken_default_runstate: "SYNC"
 kraken_default_platform: "vbox"
 kraken_default_arch: "amd64"
-kraken_nodes: 
+kraken_nodes:
   - 'nodename': "kr1"
     'id': "{{ 'kr1' | to_uuid }}"
     'arch': "{{ kraken_default_arch }}"
@@ -11,7 +20,7 @@ kraken_nodes:
     'parentid': "{{ kraken_parent_id }}"
     'runstate': "{{ kraken_default_runstate }}"
     'extensions':
-      'VBox':
+      'Hypervisor':
         "apiServer": "vbm"
         "name": "kr1"
       'IPv4OverEthernet':
@@ -28,7 +37,7 @@ kraken_nodes:
     'parentid': "{{ kraken_parent_id }}"
     'runstate': "{{ kraken_default_runstate }}"
     'extensions':
-      'VBox':
+      'Hypervisor':
         "apiServer": "vbm"
         "name": "kr2"
       'IPv4OverEthernet':
@@ -45,7 +54,7 @@ kraken_nodes:
     'parentid': "{{ kraken_parent_id }}"
     'runstate': "{{ kraken_default_runstate }}"
     'extensions':
-      'VBox':
+      'Hypervisor':
         "apiServer": "vbm"
         "name": "kr3"
       'IPv4OverEthernet':
@@ -62,7 +71,7 @@ kraken_nodes:
     'parentid': "{{ kraken_parent_id }}"
     'runstate': "{{ kraken_default_runstate }}"
     'extensions':
-      'VBox':
+      'Hypervisor':
         "apiServer": "vbm"
         "name": "kr4"
       'IPv4OverEthernet':

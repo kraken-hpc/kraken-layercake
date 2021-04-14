@@ -5,10 +5,11 @@
 ###
 
 usage() {
-   echo "Usage: $0 [-kh] [-o <out_file>] [-t <tmp_dir>] <dir> [<dir> ...]["
-   echo "   <out_file> file the image shoudl be written to. (default: layer0-20-config.xz)"
+   echo "Usage: $0 [-gkh] [-o <out_file>] [-t <tmp_dir>] <dir> [<dir> ...]["
+   echo "   <out_file> file the image shoudl be written to. (default: layer0-20-config.<xz|gz>)"
    echo "   <tmp_dir> is a temporary directory to use."
    echo "   <dir> directory containing the config files to overlay. Any additonal directories will be overlayed in order."
+   echo "  [-g] use gzip instead of xz (needed for kernels with no xz support)"
    echo "  [-k] keep termporary directory (do not delete)"
    echo "  [-h] display this usage information and exit"
 }
@@ -18,7 +19,7 @@ fatal() {
    exit 1
 }
 
-if ! opts=$(getopt o:t:hk "$@"); then
+if ! opts=$(getopt o:t:hkg "$@"); then
    usage
    exit
 fi
@@ -26,6 +27,7 @@ fi
 ORIG_PWD=$PWD
 OUTFILE="layer0-20-config.xz"
 DELETE_TMPDIR=1
+COMPRESS=xz
 # shellcheck disable=SC2086
 set -- $opts
 for i; do
@@ -44,7 +46,10 @@ for i; do
       -k)
          echo "Will not delete temporary directory at the end"
          DELETE_TMPDIR=0
-         shift; shift;;
+         shift;;
+      -g) echo "Will use gzip instead of xz"
+          COMPRESS=gzip
+          shift;;
       --)
          shift; break;;
    esac
@@ -84,11 +89,12 @@ for d in "${DIRS[@]}"; do
 done
 
 echo "Making compressed cpio"
+EXTENSION=$([[ $COMPRESS == "xz" ]] && echo "xz" || echo "gz" )
 cd "$TMPDIR/root" || fatal "could not cd to $TMPDIR/root"
-find . | cpio -oc | xz -c > ../conf.cpio.xz || fatal "failed to create compressed cpio"
+find . | cpio -oc | $COMPRESS -c > "../conf.cpio.$EXTENSION" || fatal "failed to create compressed cpio"
 
 cd "$ORIG_PWD" || fatal "failed to cd to $ORIG_PWD"
-cp -v "$TMPDIR/conf.cpio.xz" "$OUTFILE" || fatal "failed to copy bundle to $OUTFILE"
+cp -v "$TMPDIR/conf.cpio.$EXTENSION" "$OUTFILE" || fatal "failed to copy archive to $OUTFILE"
 
 if [ $DELETE_TMPDIR -eq 1 ]; then
    echo "Cleaning up $TMPDIR"

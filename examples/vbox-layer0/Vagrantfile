@@ -5,7 +5,7 @@ parent_nm = ENV['KRAKEN_PARENT_NETMASK'] || '255.255.255.0'
 
 $script = <<-SCRIPT
 echo "Installing some prerequisits to run ansible locally"
-dnf -y --nogpgcheck --nobest install ansible python3-netaddr
+dnf -y --nogpgcheck install ansible python3-netaddr
 SCRIPT
 
 Vagrant.require_version ">= 2.0.0"
@@ -15,7 +15,7 @@ Vagrant.configure("2") do |config|
     kraken.vm.box = "boxomatic/centos-8-stream"
     kraken.vm.network "private_network",
       ip: parent_ip,
-      netmask: parent_nm, 
+      netmask: parent_nm,
       virtualbox__intnet: vboxnet
     kraken.vm.network "private_network",
       ip: "10.11.12.1",
@@ -26,7 +26,7 @@ Vagrant.configure("2") do |config|
     kraken.vm.provider "virtualbox" do |v|
       v.name = "kraken"
       v.linked_clone = true
-      v.memory = 512
+      v.memory = 4096
       v.cpus = 2
       v.customize [
         "modifyvm", :id,

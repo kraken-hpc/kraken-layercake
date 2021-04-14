@@ -5,15 +5,16 @@
 ###
 
 usage() {
-   echo "Usage: $0 [-kha] [-o <out_file>] [-c <chroot_dir>] [-t <tmp_dir>] [-f <mod_file>] <kernel_version> [<mod> ...]"
+   echo "Usage: $0 [-gkha] [-o <out_file>] [-c <chroot_dir>] [-t <tmp_dir>] [-f <mod_file>] <kernel_version> [<mod> ...]"
    echo "  <out_file> file the image should be written to. (default: layer0-10-kmod.<kernel_version>.cpio.xz)"
    echo "  <chroot_dir> chroot to look for kernel modules in (currently not implemented)"
    echo "  <tmp_dir> is a temporary directory to use.  This can be used to resume a previous build"
    echo "  <mod_file> a file to read a list of modules from.  Can contain blank lines and comments beginning with #."
    echo "  <kernel_version> the kernel version string to build the kmod bundle for.  For current kernel, use $(uname -r)."
    echo "  <mod> ... modules to be added to the kmod bundle (can be combined with <mod_file>)"
-   echo "  [-k] keep termporary directory (do not delete)"
    echo "  [-a] install all available modules (ignores <mod_file> and <mod>)"
+   echo "  [-g] use gzip instead of xz (needed for kernels with no xz support)"
+   echo "  [-k] keep termporary directory (do not delete)"
    echo "  [-h] display this usage information and exit"
 }
 
@@ -51,7 +52,7 @@ build_modlist() {
    IFS=$'\n' MODLIST=($( sort -u <<<"${MODLIST[*]}")); unset IFS
 }
 
-if ! opts=$(getopt c:f:o:t:kah "$@"); then
+if ! opts=$(getopt c:f:o:t:kahg "$@"); then
    usage
    exit
 fi
@@ -60,6 +61,7 @@ ORIG_PWD=$PWD
 DELETE_TMPDIR=1
 ALL_MODS=0
 ROOT="/"
+COMPRESS=xz
 
 # shellcheck disable=SC2086
 set -- $opts
@@ -99,6 +101,9 @@ for i; do
          echo "Building bundle with all kmods (other specifiers will be ignored)"
          ALL_MODS=1
          shift;;
+      -g) echo "Will use gzip instead of xz"
+          COMPRESS=gzip
+          shift;;
       --)
          shift; break;;
    esac
@@ -167,8 +172,12 @@ if [ -z ${OUTFILE+x} ]; then
 fi
 
 echo "Creating compressed cpio at $OUTFILE"
+EXTENSION=$([[ $COMPRESS == "xz" ]] && echo "xz" || echo "gz" )
 cd "$TMPDIR/root" || fatal "could not cd to $TMPDIR/root"
-find . | cpio -oc | xz -c > "$ORIG_PWD"/"$OUTFILE" || fatal "failed to compressec cpio bundle"
+find . | cpio -oc | $COMPRESS -c > "$TMPDIR/kmod.cpio.$EXTENSION" || fatal "failed to compressec cpio bundle"
+
+cd "$ORIG_PWD" || fatal "could not cd to $ORIG_PWD"
+cp -v "$TMPDIR/kmod.cpio.$EXTENSION" "$OUTFILE" || fatal "failed to copy archive to $ORIG_PWD"
 
 if [ $DELETE_TMPDIR -eq 1 ]; then
    echo "Cleaning up $TMPDIR"
