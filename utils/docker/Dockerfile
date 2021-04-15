@@ -28,6 +28,7 @@ COPY . .
 
 # install package dependencies
 RUN apk add --no-cache \
+      coreutils \
       syslinux \
       git \
       cpio \
