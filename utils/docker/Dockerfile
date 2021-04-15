@@ -28,6 +28,7 @@ COPY . .
 
 # install package dependencies
 RUN apk add --no-cache \
+      coreutils \
       syslinux \
       git \
       cpio \
@@ -57,7 +58,7 @@ RUN bash utils/layer0/build-layer0-base.sh -o /tftp/amd64/powerapi/layer0-base.x
 RUN cp -av utils/docker/config /tftp/layer0/config \
     && ssh-keygen -N "" -t rsa -b 4096 -f /root/.ssh/cluster \
     && cp -av /root/.ssh/cluster.pub /tftp/layer0/config/authorized_keys \
-    && bash utils/layer0/build-layer0-config.sh -t /tmp/layer0-config -o /tftp/amd64/powerapi/layer0-conf.xz /tftp/layer0/config
+    && bash utils/layer0/build-layer0-config.sh -g -t /tmp/layer0-config -o /tftp/amd64/powerapi/layer0-conf.xz /tftp/layer0/config
 
 ENTRYPOINT [ "/sbin/kraken-layercake" ]
 CMD [ "-h" ]
