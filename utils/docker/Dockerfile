@@ -52,13 +52,13 @@ RUN mkdir -p /tftp/amd64/powerapi/pxelinux.cfg \
 
 # build layer0-base
 # note: we have to use -t because `mktemp` is not gnu compliant
-RUN bash utils/layer0/build-layer0-base.sh -o /tftp/amd64/powerapi/layer0-base.xz -t /tmp/layer0-base "$GOARCH"
+RUN bash utils/layer0/build-layer0-base.sh -g -o /tftp/amd64/powerapi/layer0-base.gz -t /tmp/layer0-base "$GOARCH"
 
 # build layer0-config (stubs)
 RUN cp -av utils/docker/config /tftp/layer0/config \
     && ssh-keygen -N "" -t rsa -b 4096 -f /root/.ssh/cluster \
     && cp -av /root/.ssh/cluster.pub /tftp/layer0/config/authorized_keys \
-    && bash utils/layer0/build-layer0-config.sh -g -t /tmp/layer0-config -o /tftp/amd64/powerapi/layer0-conf.xz /tftp/layer0/config
+    && bash utils/layer0/build-layer0-config.sh -g -t /tmp/layer0-config -o /tftp/amd64/powerapi/layer0-conf.gz /tftp/layer0/config
 
 ENTRYPOINT [ "/sbin/kraken-layercake" ]
 CMD [ "-h" ]
