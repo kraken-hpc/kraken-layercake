@@ -10,4 +10,4 @@ state.json
 /kraken-build
 **/*.swp
 cmd/kraken-layercake/kraken-layercake
-cmd/kraken-layercake-vbox/kraken-layercake-vbox
+cmd/kraken-layercake-virt/kraken-layercake-virt

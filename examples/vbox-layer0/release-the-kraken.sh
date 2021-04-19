@@ -121,7 +121,7 @@ nohup go run "${VBOXAPI}" -v -ip "${VBOXNET_IP}" -vbm "${VB}" > log/vboxapi.log 
 
 echo "Creating and provisioning the kraken parent (this may take a while)..."
 echo RUN: "${VG}" up kraken
-"${VG}" up kraken 2>&1 | tee -a log/vagrant-up-kraken.log
+"${VG}" up --provision kraken 2>&1 | tee -a log/vagrant-up-kraken.log
 
 if command -v open > /dev/null; then
     echo "Launching dashboard viewer to: http://${KRAKEN_IP}/"
