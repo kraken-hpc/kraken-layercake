@@ -196,16 +196,16 @@ fi
 # This is a base64 encoded, xz compressed, cpio archive containing a base layout, including some needed /dev files. 
 # We do things this way becaus mknod would require root...
 BASE_CPIO="
-/Td6WFoAAATm1rRGAgAhARYAAAB0L+Wj4An/AchdABgN3weEa2dQnNrpI3XOhOilM2KI2YlAURV6
-k+7+u2dCSHfVCr8VtGoq3dyYtyLgQUmqh88Y0UyDRotUtMlBlIo9t+EJCkDbLTIKaBBxCY0C9yYB
-DUnoUsGjK8eL/w7YTqAUE0kXI+ZiUcPlY3RczW1hG56tLOQEFLEMGXulDQrXB0BxRuD1MBCfJEB3
-RnHKJkq3DMQGtmWWEM25zud5zlTCrFVsXteIO/lxgDgUJpaUAEKMTB3NoP6ViJFmlrv+wvGOD5vT
-2Za1CXjhcRSSUr0p5or3A4B8ATM8Llutsvt6VdL1ivRWn9echbRW5F/y1l1nrMj585ZEKWPCkhnh
-ADEcrXFPRFZjzmpC5IzxcNKc0XCyVD4OPLymmcs9thmmB4Yy80cyPuu4I8y3DqcpwPu6DzK2o3Sq
-8t96OHvMOoEqLJoaz4QybaesQdFYR0bFg0+tKFGfFmcHjFRXDSbiVMGIoCDscKRtfj48zf74dCdO
-qa4MDOZ8FPswipHRw+0++wM7st45QFpGTZK0e5QjrhEwY4Gxbopp/R9WxkvKlWnBIsQj1QGzsjxP
-LSDw7WN63is9CNJ4Sisn/Ps6gVy9kRHr20shA3BXAABUfVGEm0ZtDwAB5AOAFAAADkpW/7HEZ/sC
-AAAAAARZWg==
+/Td6WFoAAATm1rRGAgAhARYAAAB0L+Wj4A3/Ac9dABgN3QRjgyFfMVIpSS2IjrjVcD7zVFFDndP2
+lXlpi9lH1xESMB4sEnZMpe4BsWuPVqAyxkceBHXFE0uDjFKFeJVudklf3Kuds60V9wjzKee3jMhl
+tal73Xc/N8HxlXI7XHWwJ2TMFGwhbrA4SzMRnlh8DHygQ+r/4nNHJ7TbkCbaypggIIWm8LEeg9Yk
+WPeYiIHrqR8CeJaMO62oiSO3ECfau/XxQ6fm3yWB3c5tPc5o2crnwsyMaTcBbEzA5j8FAUjKVYiM
+0MogZIZlfdkdi9zq70aJEjA3Q2W+crQWduFTOGi0MlO4g6M0NX8N5FLBUS0MmvLwpLIzyVZexZJN
+AO6k3CbUE7AB9K4dsFHG792yhrRgqC/BJmugLPQuZIZLqKbBq6rW4FV4I7GCtmb06QdA3zGVGJZ9
+kG2svGbdGu33CSMaL9pNs1rcc9M8tI5kTWJB5XagwLfplsTLaNYyOR9uku56kD5nMcYad8aeQRii
+Bh+h1PYzwyGXGfODOEB0kQXZqfQTNFHiyrqxm50khuV2p6QeEfrMRZ1d336ACj/E22r0XSwSmxij
+PWnUMzc+gblitedTSbE/6hP4m5qsAzzjXiMX23DG1EBoQDulVVsAAAFjIkPZAbvdAAHrA4AcAABj
+qRMAscRn+wIAAAAABFla
 "
 
 echo "Extracting cpio base..."
@@ -214,7 +214,7 @@ echo "$BASE_CPIO" | base64 -di - | xz -dc > "$TMPDIR/initramfs.cpio" || fatal "f
 echo "Creating compressed cpio..."
 (
     cd "$TMPDIR/base"
-    find . | cpio -ocA -R root:root -O "$TMPDIR/initramfs.cpio"
+    find . | cpio -oA -H newc -R root:root -O "$TMPDIR/initramfs.cpio"
 ) || fatal "Creating base cpio failed"
 
 echo "Compressing..."
