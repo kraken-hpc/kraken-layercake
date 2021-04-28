@@ -10,8 +10,10 @@
     kr_rpm: false
   roles:
     - common
+    - kraken_git
     - kraken_tftpboot
     - kraken_state
+    - kraken_build_layer0
     - kraken_podman
     - kraken_systemd
     - kraken_dashboard
