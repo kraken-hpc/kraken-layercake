@@ -64,10 +64,10 @@
   args:
     cmd: /bbin/ip link set {{.iface}} up
 
-- name: Start kraken-layercake-vbox
+- name: Start kraken-layercake-virt
   module: command
   args:
-    cmd: /bbin/kraken-layercake-vbox -ip {{.ip}} -parent {{.parent}} -id {{.id}} -log {{.loglevel}}
+    cmd: /bbin/kraken-layercake-virt -ip {{.ip}} -parent {{.parent}} -id {{.id}} -log {{.loglevel}}
     background: true
 
 - name: Start sshd
