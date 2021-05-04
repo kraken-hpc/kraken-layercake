@@ -4,12 +4,17 @@
     kr_repo: https://github.com/kraken-hpc/kraken-layercake.git
     kr_repo_version: "main"
     kr_build_args: "-v -force"
+    # build with vbox?
+    kr_with_vbox: true
+    # build rpm instead of direct compilation?
+    kr_rpm: false
   roles:
     - common
-    - kraken_build
+    - kraken_git
     - kraken_tftpboot
-    - kraken_build_layer0
     - kraken_state
+    - kraken_build_layer0
+    - kraken_podman
     - kraken_systemd
     - kraken_dashboard
 #    - extras

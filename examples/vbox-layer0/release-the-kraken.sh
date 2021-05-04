@@ -120,8 +120,13 @@ echo RUN: nohup go run "${VBOXAPI}" -v -ip "${VBOXNET_IP}"
 nohup go run "${VBOXAPI}" -v -ip "${VBOXNET_IP}" -vbm "${VB}" > log/vboxapi.log &
 
 echo "Creating and provisioning the kraken parent (this may take a while)..."
-echo RUN: "${VG}" up kraken
-"${VG}" up kraken 2>&1 | tee -a log/vagrant-up-kraken.log
+if "$VB" list vms | grep -q kraken; then
+    echo RUN: "${VG}" reload kraken
+    "${VG}" reload --provision kraken 2>&1 | tee -a log/vagrant-up-kraken.log
+else 
+    echo RUN: "${VG}" up kraken
+    "${VG}" up --provision kraken 2>&1 | tee -a log/vagrant-up-kraken.log
+fi
 
 if command -v open > /dev/null; then
     echo "Launching dashboard viewer to: http://${KRAKEN_IP}/"
