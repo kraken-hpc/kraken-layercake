@@ -88,7 +88,6 @@ shift
 # Commands to build into u-root busybox
 EXTRA_COMMANDS=()
 if [ $NO_EXTRAS -eq 0 ]; then
-    EXTRA_COMMANDS+=( github.com/kraken-hpc/kraken-layercake/cmd/kraken-layercake )
     EXTRA_COMMANDS+=( github.com/kraken-hpc/uinit/cmds/uinit )
     EXTRA_COMMANDS+=( github.com/kraken-hpc/imageapi/cmd/imageapi-server )
     EXTRA_COMMANDS+=( github.com/jlowellwofford/entropy/cmd/entropy )
