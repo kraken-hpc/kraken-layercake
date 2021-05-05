@@ -52,7 +52,7 @@ RUN mkdir -p /tftp/amd64/powerapi/pxelinux.cfg \
 
 # build layer0-base
 # note: we have to use -t because `mktemp` is not gnu compliant
-RUN bash utils/layer0/build-layer0-base.sh -g -o /tftp/amd64/powerapi/layer0-base.gz -t /tmp/layer0-base "$GOARCH"
+RUN bash utils/layer0/build-layer0-base.sh -g -o /tftp/amd64/powerapi/layer0-base.gz -t /tmp/layer0-base "$GOARCH" github.com/kraken-hpc/kraken-layercake/cmd/kraken-layercake
 
 # build layer0-config (stubs)
 RUN cp -av utils/docker/config /tftp/layer0/config \
