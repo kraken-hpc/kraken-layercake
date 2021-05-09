@@ -299,6 +299,8 @@ github.com/kraken-hpc/go-fork v0.1.1/go.mod h1:uu0e5h+V4ONH5Qk/xuVlyNXJXy/swhqGI
 github.com/kraken-hpc/imageapi v0.1.3/go.mod h1:kDKd8QJ6fp2Hf2pfbCEqFeSDF0MNplcu1xuUBOHYkY4=
 github.com/kraken-hpc/imageapi v0.1.4 h1:+lzhHR1oy2rYoXgwJnneQ21UcgWJr5wBfs5GA+EGm/M=
 github.com/kraken-hpc/imageapi v0.1.4/go.mod h1:kDKd8QJ6fp2Hf2pfbCEqFeSDF0MNplcu1xuUBOHYkY4=
+github.com/kraken-hpc/imageapi v0.1.5 h1:etNKSboeGJjBeglVHty4gwCEOILOyaotzlJrH/Js1Wc=
+github.com/kraken-hpc/imageapi v0.1.5/go.mod h1:kDKd8QJ6fp2Hf2pfbCEqFeSDF0MNplcu1xuUBOHYkY4=
 github.com/kraken-hpc/kraken v0.0.0-20210324190123-ba28824525d3 h1:uZaTUwwC8vAq344BgnhsrK+8hMXo+wOu9laUG9ZfcdM=
 github.com/kraken-hpc/kraken v0.0.0-20210324190123-ba28824525d3/go.mod h1:huFcZJwyKlOscTaVIPanknLJJNxsNvRiJOqcgrBcvJo=
 github.com/kraken-hpc/powerapi v0.1.1 h1:wk6xZ4QxA6gilfr2uVoHzaatRHy812r9JPwehejvvdc=
