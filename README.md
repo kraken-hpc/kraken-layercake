@@ -3,8 +3,6 @@
 Kraken "Layercake" is a [kraken](https://github.com/kraken-hpc/kraken)-based tool for provisioning and managing clusters of physical (or virtual) computer 
 systems, such as those used in high-performance compute clusters.
 
-***Please excluse our dust!  kraken-layercake is being split from the main kraken project. While we get things organized, examples & utilities may be broken!***
-
 ## The layer design
 "Layercake" refers to the model used to manage systemm images.  As opposed to traditional HPC management systems, Layercake provisions nodes in layers:
 
