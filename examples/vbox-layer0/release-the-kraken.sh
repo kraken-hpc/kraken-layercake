@@ -116,8 +116,8 @@ bash create-nodes.sh 2>&1 | tee -a log/create-nodes.log
 echo "(RE)Starting vboxapi, log file in log/vboxapi.log"
 echo RUN: pkill vboxapi
 pkill vboxapi || true
-echo RUN: nohup go run "${VBOXAPI}" -v -ip "${VBOXNET_IP}"
-nohup go run "${VBOXAPI}" -v -ip "${VBOXNET_IP}" -vbm "${VB}" > log/vboxapi.log &
+echo RUN: nohup go run "${VBOXAPI}" -v -ip 0.0.0.0
+nohup go run "${VBOXAPI}" -v -ip 0.0.0.0 -vbm "${VB}" > log/vboxapi.log &
 
 echo "Creating and provisioning the kraken parent (this may take a while)..."
 if "$VB" list vms | grep -q kraken; then
