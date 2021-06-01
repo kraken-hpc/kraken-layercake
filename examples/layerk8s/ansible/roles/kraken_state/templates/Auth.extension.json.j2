@@ -1,0 +1,8 @@
+{
+{{- '    "token": "' ~ ext.token ~ '",\n' if ext.token is defined else "" -}}
+{{- '    "useToken": ' ~ ext.useToken ~ ',\n' if ext.useToken is defined else "" -}}
+{{- '    "useTls": ' ~ ext.useTls ~ ',\n' if ext.useTls is defined else "" -}}
+{{- '    "tlsSkipVerify": ' ~ ext.tlsSkipVerify ~ ',\n' if ext.tlsSkipVerify is defined else "" -}}
+{{- '    "clientTls": ' ~ ext.clientTls~ ',\n' if ext.clientTls is defined else "" -}}
+    "@type": "type.googleapis.com/Shasta.Auth"
+}

@@ -1,0 +1,32 @@
+---
+kraken_api_host: "localhost"
+kraken_api_port: 3141
+kraken_api_scheme: http
+kraken_api_method: "PUT"
+kraken_inject_state: false
+kraken_state_file: "state.json"
+kraken_nodes_static: []
+kraken_nodes_generated: []
+kraken_nodes: "{{ kraken_nodes_static|list + kraken_nodes_generated|list  }}"
+
+# imageapi - you likely want to set these
+imageapi_default_ceph_name: "admin"
+imageapi_default_ceph_secret: "NOSECRETPROVIDED"
+imageapi_default_ceph_monitor: "127.0.0.1"
+imageapi_default_image: "image"
+
+# imageapi - these might be ok as defaults
+imageapi_default_state: "ACTIVE"
+imageapi_default_systemd: true
+imageapi_default_image_state: "running"
+imageapi_default_command: "/usr/lib/systemd/systemd"
+imageapi_default_ceph_pool: "rbd"
+imageapi_default_fstype: "squashfs"
+
+powerapi_default_apiserver: "powerapi"
+
+node_default_arch: "amd64"
+node_default_platform: ""
+node_default_parentid: ""
+node_default_runstate: "SYNC"
+node_default_physstate: "POWER_ON"

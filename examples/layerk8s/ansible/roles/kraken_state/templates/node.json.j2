@@ -1,0 +1,29 @@
+{
+    "nodename": "{{ node.nodename }}",
+    "id": "{{ node.id|default(node.nodename|to_uuid) }}",
+    "arch": "{{ node.arch|default(node_default_arch) }}",
+    "platform": "{{ node.platform|default(node_default_platform) }}",
+    "parentId": "{{ node.parentid|default(node_default_parentid) }}",
+    "runState": "{{ node.runstate|default(node_default_runstate) }}",
+    "physState": "{{ node.physstate|default(node_default_physstate) }}",
+    "services": [
+{%- if node.services is defined -%}
+{% for svc_name, svc in node.services %}
+{% include svc_name ~ ".service.json.j2" ignore missing %}
+{%- if not loop.last -%}
+,
+{%- endif -%}
+{% endfor %}
+{%- endif -%}
+    ],
+    "extensions": [
+{%- if node.extensions is defined -%}
+{% for ext_name, ext in node.extensions.items() %}
+{% include ext_name ~ ".extension.json.j2" ignore missing %}
+{%- if not loop.last -%}
+,
+{%- endif -%}
+{% endfor %}
+{%- endif -%}
+    ]
+}

@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: layercake-deployment
+  labels:
+    app: layercake
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: layercake
+  template:
+    metadata:
+      labels:
+        app: layercake
+    spec:
+      hostname: layercake
+      hostAliases:
+      - ip: "192.168.3.1"
+        hostnames:
+        - "node01.localdomain"
+        - "node01"
+      - ip: "192.168.3.2"
+        hostnames:
+        - "node02.localdomain"
+        - "node02"
+      - ip: "192.168.3.3"
+        hostnames:
+        - "node03.localdomain"
+        - "node03"
+      - ip: "192.168.3.4"
+        hostnames:
+        - "node04.localdomain"
+        - "node04"
+      hostNetwork: true
+      containers:
+      #
+      # The layercake container
+      #
+      - name: layercake
+        image: 192.168.3.253:5000/kraken-layercake
+        volumeMounts:
+        - name: kraken-conf
+          mountPath: "/etc/kraken/"
+          readOnly: true
+        - name: tftp
+          mountPath: "/tftp"
+      volumes:
+      - name: kraken-conf
+        configMap:
+          name: kraken-conf
+      - name: tftp
+        persistentVolumeClaim:
+          claimName: tftp-pvc

@@ -1,0 +1,56 @@
+---
+kraken_nodes_generated:
+  - nodename: node01
+    extensions:
+      PowerAPI:
+      ImageAPI:
+        images:
+          layercake:
+            name: centos-k3s
+      IPv4OverEthernet:
+        ifaces:
+          kraken:
+            name: eth0
+            ip: 192.168.3.1
+            subnet: 255.255.255.0
+            mac: ba:cc:ab:00:00:01
+  - nodename: node02
+    extensions:
+      PowerAPI:
+      ImageAPI:
+        images:
+          layercake:
+            name: centos-k3s
+      IPv4OverEthernet:
+        ifaces:
+          kraken:
+            name: eth0
+            ip: 192.168.3.2
+            subnet: 255.255.255.0
+            mac: ba:cc:ab:00:00:02
+  - nodename: node03
+    extensions:
+      PowerAPI:
+      ImageAPI:
+        images:
+          layercake:
+      IPv4OverEthernet:
+        ifaces:
+          kraken:
+            name: eth0
+            ip: 192.168.3.3
+            subnet: 255.255.255.0
+            mac: ba:cc:ab:00:00:03
+  - nodename: node04
+    extensions:
+      PowerAPI:
+      ImageAPI:
+        images:
+          layercake:
+      IPv4OverEthernet:
+        ifaces:
+          kraken:
+            name: eth0
+            ip: 192.168.3.4
+            subnet: 255.255.255.0
+            mac: ba:cc:ab:00:00:04

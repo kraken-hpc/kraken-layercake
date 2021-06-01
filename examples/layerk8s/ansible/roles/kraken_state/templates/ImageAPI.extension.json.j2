@@ -1,0 +1,87 @@
+{# example - We're going to make a bunch of structure assumptions for now
+{
+  "@type": "type.googleapis.com/ImageAPI.ImageSet",
+  "images": {
+    "systemd": {
+      "container": {
+        "command": "/usr/lib/systemd/systemd",
+        "mount": {
+          "kind": "overlay",
+          "overlay": {
+            "lower": [
+              {
+                "kind": "rbd",
+                "rbd": {
+                  "fs_type": "squashfs",
+                  "mount_options": [
+                    "ro"
+                  ],
+                  "rbd": {
+                    "image": "centos-slurm-1620275282",
+                    "monitors": [
+                      "192.168.3.253"
+                    ],
+                    "options": {
+                      "name": "admin",
+                      "ro": true,
+                      "secret": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                    },
+                    "pool": "rbd"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "state": "running",
+        "systemd": true
+      }
+    }
+  },
+  "state": "ACTIVE"
+}
+#}
+{
+{% for name, image in ext.images.items() %}
+"images": {
+"{{ name }}": {
+	"container": {
+		{# to avoid a lot of complexity, we assume overlay + rbd #}
+		"mount": {
+		  "kind": "overlay",
+		  "overlay": {
+		    "lower": [
+		      {
+			"kind": "rbd",
+			"rbd": {
+			  "fs_type": "{{ image.fstype|default(imageapi_default_fstype) }}",
+			  "mount_options": [
+			    "ro"
+			  ],
+			  "rbd": {
+			    "image": "{{ image.name|default(imageapi_default_image) }}",
+			    "monitors": [ {# we *should* support multiple mons #}
+			      "{{ image.ceph_monitor|default(imageapi_default_ceph_monitor) }}"
+			    ],
+			    "options": {
+			      "name": "{{ image.ceph_name|default(imageapi_default_ceph_name) }}",
+			      "ro": true,
+			      "secret": "{{ image.ceph_secret|default(imageapi_default_ceph_secret) }}"
+			    },
+			    "pool": "{{ image.ceph_pool|default(imageapi_default_ceph_pool) }}"
+			  }
+			}
+		      }
+		    ]
+		  }
+		},
+		"command": "{{ image.command|default(imageapi_default_command) }}",
+		"state": "{{ image.state|default(imageapi_default_image_state) }}",
+		"systemd": {{ image.state|default(imageapi_default_systemd) }}
+	}
+}
+{% endfor %}
+},
+  "state": "{{ ext.state|default(imageapi_default_state) }}",
+  "@type": "type.googleapis.com/ImageAPI.ImageSet"
+}

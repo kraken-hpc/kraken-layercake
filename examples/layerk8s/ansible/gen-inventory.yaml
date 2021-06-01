@@ -1,0 +1,7 @@
+---
+- hosts: nlm
+  connection: local
+  vars:
+    kraken_state_file: "state.json"
+  roles:
+    - gen_inventory

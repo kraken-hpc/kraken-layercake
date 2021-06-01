@@ -1,0 +1,13 @@
+{
+{{- '    "state": "' ~ ext.state ~ '",\n' if ext.state is defined else "" -}}
+{{- '    "cfs": "' ~ ext.cfs ~ '",\n' if ext.cfs is defined else "" -}}
+{{- '    "kernel": "' ~ ext.kernel ~ '",\n' if ext.kernel is defined else "" -}}
+{{- '    "initrd": "' ~ ext.initrd ~ '",\n' if ext.initrd is defined else "" -}}
+{{- '    "params": "' ~ ext.params ~ '",\n' if ext.params is defined else "" -}}
+{{- '    "image": "' ~ ext.image ~ '",\n' if ext.image is defined else "" -}}
+{{- '    "cfsVersion": "' ~ ext.cfsVersion ~ '",\n' if ext.cfsVersion is defined else "" -}}
+{{- '    "imageType": "' ~ ext.imageType ~ '",\n' if ext.imageType is defined else "" -}}
+{{- '    "imageMethod": "' ~ ext.imageMethod ~ '",\n' if ext.imageMethod is defined else "" -}}
+{{- '    "cfsMethod": "' ~ ext.cfsMethod ~ '",\n' if ext.cfsMethod is defined else "" -}}
+    "@type": "type.googleapis.com/Shasta.NLM"
+}

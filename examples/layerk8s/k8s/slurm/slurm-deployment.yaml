@@ -1,0 +1,102 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: slurmctld-deployment
+  labels:
+    app: slurmctld
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: slurmctld
+  template:
+    metadata:
+      labels:
+        app: slurmctld
+    spec:
+      hostname: slurm
+      hostAliases:
+      - ip: "192.168.3.1"
+        hostnames:
+        - "node01.localdomain"
+        - "node01"
+      - ip: "192.168.3.2"
+        hostnames:
+        - "node02.localdomain"
+        - "node02"
+      - ip: "192.168.3.3"
+        hostnames:
+        - "node03.localdomain"
+        - "node03"
+      - ip: "192.168.3.4"
+        hostnames:
+        - "node04.localdomain"
+        - "node04"
+      containers:
+      #
+      # The slurmctld container
+      #
+      - name: slurmctld
+        image: 192.168.3.253:5000/slurmctld
+        #command: ['/sbin/init']
+        ports:
+        - containerPort: 6817
+        volumeMounts:
+        - name: slurm-conf
+          mountPath: "/etc/slurm/"
+          readOnly: true
+        - name: run-munge
+          mountPath: "/run/munge"
+        - name: var-lib-sss
+          mountPath: "/var/lib/sss"
+        - name: var-spool
+          mountPath: "/var/spool"
+      #      #
+      #      # The munge container
+      #      #
+      - name: munge
+        image: 192.168.3.253:5000/munge
+        #command: ['/sbin/init']
+        volumeMounts:
+        - name: munge-key
+          mountPath: "/data/munge/"
+          readOnly: true
+        - name: run-munge
+          mountPath: "/run/munge"
+      #
+      # The sssd container
+      #
+      - name: sssd
+        image: 192.168.3.253:5000/sssd
+        #command: ['/sbin/init']
+        volumeMounts:
+        - name: sssd-conf
+          mountPath: "/etc/sssd/sssd.conf"
+          readOnly: true
+          subPath: sssd.conf
+        - name: var-lib-sss
+          mountPath: "/var/lib/sss"
+        - name: etc-passwd-d
+          mountPath: "/etc/passwd.d"
+      volumes:
+      - name: slurm-conf
+        configMap:
+          name: slurm-conf
+      - name: munge-key
+        secret:
+          secretName: munge-key
+          defaultMode: 0400
+      - name: sssd-conf
+        configMap:
+          name: sssd-conf
+          defaultMode: 0600
+      - name: etc-passwd-d
+        configMap:
+          name: etc-passwd-d
+      - name: run-munge
+        emptyDir: {}
+      - name: var-lib-sss
+        emptyDir: {}
+      - name: var-spool
+        persistentVolumeClaim:
+          claimName: local-path-pvc

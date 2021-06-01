@@ -1,0 +1,21 @@
+kraken_nodes_generated:
+{% for n in range(kraken_num_nodes|int) %}
+  - 'nodename': "{{ kraken_base_nodename ~ (n|int + 1) }}"
+    'id': "{{ ( kraken_base_nodename ~ (n|int +1)) | to_uuid }}"
+    'arch': "{{ kraken_default_arch }}"
+    'platform': "{{ kraken_default_platform }}"
+    'parentid': "{{ kraken_parent_id }}"
+    'extensions':
+      'NLM':
+        "state": "OK"
+        "params": "{{ nlm_params }}"
+        "kernel": "{{ nlm_kernel }}"
+        "initrd": "{{ nlm_initrd }}"
+        "image": "{{ nlm_image }}"
+        "imageType": "{{ nlm_image_type }}"
+      'IPv4OverEthernet':
+        'ifaces':
+          'kraken':
+            'name': "eth0"
+            'ip': {{ kraken_base_ip ~ (n|int + 1) }}
+{% endfor %}
