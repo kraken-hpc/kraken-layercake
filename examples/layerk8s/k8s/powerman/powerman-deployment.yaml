@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: powerman-deployment
+  labels:
+    app: powerman 
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: powerman
+  template:
+    metadata:
+      labels:
+        app: powerman
+    spec:
+      hostname: powerman
+      hostNetwork: true
+      hostAliases:
+      - ip: "192.168.0.1"
+        hostnames:
+        - "pnode01.localdomain"
+        - "pnode01"
+      - ip: "192.168.0.2"
+        hostnames:
+        - "pnode02.localdomain"
+        - "pnode02"
+      - ip: "192.168.0.3"
+        hostnames:
+        - "pnode03.localdomain"
+        - "pnode03"
+      - ip: "192.168.0.4"
+        hostnames:
+        - "pnode04.localdomain"
+        - "pnode04"
+      containers:
+      #
+      # The powerman container
+      #
+      - name: powerman
+        image: 192.168.3.253:5000/powerman
+        volumeMounts:
+        - name: powerman-conf
+          mountPath: "/etc/powerman/powerman.conf"
+          readOnly: true
+          subPath: powerman.conf
+      - name: powermanapi
+        image: 192.168.3.253:5000/powermanapi
+        ports:
+        - containerPort: 8269
+      volumes:
+      - name: powerman-conf
+        configMap:
+          name: powerman-conf

@@ -1,0 +1,9 @@
+---
+- name: Inject kraken configuration state
+  listen: kraken inject state
+  when: kraken_inject_state|bool
+  uri:
+    url: "{{ kraken_api_scheme }}://{{ kraken_api_host}}:{{ kraken_api_port }}/cfg/nodes"
+    method: "{{ kraken_api_method }}"
+    body_format: json
+    src: "{{ kraken_state_file }}"

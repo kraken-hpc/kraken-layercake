@@ -1,0 +1,5 @@
+---
+kraken_num_nodes: 10
+kraken_base_nodename: x0c0s1b0n
+kraken_base_ip: 10.11.12.
+kraken_inventory_file: group_vars/all/gen_nodes.yaml

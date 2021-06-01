@@ -1,0 +1,7 @@
+parent_name: "layerk8s"
+node_default_platform: "powerapi"
+node_default_parentid: "123e4567-e89b-12d3-a456-426655440000"
+imageapi_default_ceph_monitor: "192.168.3.253"
+imageapi_default_image: "centos-base"
+imageapi_default_ceph_secret: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+kraken_inject_state: true

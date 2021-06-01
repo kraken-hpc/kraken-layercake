@@ -1,0 +1,8 @@
+---
+
+- hosts: kraken
+  connection: local
+  vars:
+    kraken_state_file: "state.json"
+  roles:
+    - kraken_state

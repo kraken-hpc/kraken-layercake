@@ -1,0 +1,8 @@
+---
+- name: Generating Kraken inventory from range
+  template: 
+    src: nodes.yaml.j2
+    dest: "{{ kraken_inventory_file }}"
+    mode: 0644
+
+- meta: refresh_inventory
