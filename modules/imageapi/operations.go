@@ -112,7 +112,7 @@ func (is *ImageAPI) deleteImage(name string, image *ia.Image) {
 		// tell the node to stop
 		is.api.Logf(types.LLINFO, "stopping image %s", name)
 		params := containers.NewSetContainerStateParams()
-		*params.Name = name
+		params.Name = &name
 		params.State = string(models.ContainerStateExited)
 		_, err := client.Containers.SetContainerState(params)
 		if err != nil {
@@ -134,7 +134,7 @@ func (is *ImageAPI) deleteImage(name string, image *ia.Image) {
 	// ok, we're ready to delete
 	is.api.Logf(types.LLINFO, "deleting image %s", name)
 	params := containers.NewDeleteContainerParams()
-	*params.Name = name
+	params.Name = &name
 	_, err = client.Containers.DeleteContainer(params)
 	if err != nil {
 		if cerr, ok := err.(*containers.DeleteContainerDefault); ok {
