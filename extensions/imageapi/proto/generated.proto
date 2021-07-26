@@ -1,4 +1,5 @@
-// BEGIN: NON-GENERATED HEADER
+// This file has been modified from it's originally generated format!
+// See README.md for details
 syntax = "proto3";
 package ImageAPI;
 
@@ -11,13 +12,75 @@ option (gogoproto.sizer_all) = true;
 option (gogoproto.goproto_registration) = true;
 option (gogoproto.messagename_all) = true;
 
-/*
+
 message CustomType {
   RbdOptions secret = 1 [(gogoproto.customtype) = "github.com/kraken-hpc/kraken-layercake/extensions/imageapi/customtypes.Secret"];
 }
-*/
-// END: NON-GENERATED HEADER
-// AUTO-GENERATED CONTENT BELOW
+
+// Generically address attachments.  Attachments are objects that ultimately provide a block device file.    
+message Attach {
+
+  // The device_file is the path to the system device file.
+  string device_file = 1;
+  int64 id = 2;
+
+  // Kind specifies the kind of attachment.  Each kind has corresponding kind-specific options.
+  // 
+  // Currently known kinds:
+  // 
+  // iscsi - attach an iscsi lun
+  // local - create an attachment reference to an existing block device (specifying a non-block device will fail)
+  // loopback - create a loopback device referencing a file in a mount
+  // rbd - attach a Ceph/RBD object
+  // 
+  // All kinds may or may not be fully supported by the implementation.
+  string kind = 3;
+  AttachLocal local = 4;
+  AttachLoopback loopback = 5;
+  AttachRbd rbd = 6;
+  int64 refs = 7;
+}
+
+// `attach_local` describes a block device that is locally present.
+// This can be used to get a reference to a local disk, for instance.
+// 
+// Local only supports finding device files on the local (root) system.
+// It only takes one parameter: the path to the device file.
+message AttachLocal {
+  // A unix-formatted filesystem path pointing to a block device file.
+  string path = 1;
+}
+
+// `attach_loopback` describes a loopback device based on an available file.
+// The file can live either on `/` ("root") or a mount, as specified by base.
+// Path specifies the path relative to the base.
+message AttachLoopback {
+
+  // base determines the relative root for the path.  There are two options:
+  // `root` means to use the current root (`/`) as the base path.
+  // `mount` means to use a mount as the base path. If this is specified, `mount` must be specified as well.
+  string base = 1;
+  Mount mount = 2;
+
+  // A unix-formatted filesystem path with `/` relative to the respective base.
+  string path = 3;
+
+  // Should the partition table on the looback device be read?
+  // Addressing sub-partitions is not yet supported.
+  bool readPartitions = 4;
+}
+
+// attach_rbd describes an RBD map.  To successfully map, at least one monitor, pool and image must be specified.
+// Additionally, you will need options.name and options.secret specified.
+message AttachRbd {
+  // The dev_id is the device ID in the rbd subsystem.
+  int64 device_id = 1;
+  string image = 2;
+  repeated string monitors = 3;
+  RbdOptions options = 4;
+  string pool = 5;
+  string snapshot = 6;
+}
 
 // The `container` option describes a minimally namespaced container.
 // 
@@ -39,12 +102,13 @@ message Container {
   // Note: This is currently unused.  All containers currently get `mnt` and `pid`.
   //       It's here as a placeholder for future use.
   repeated string namespaces = 6;
+  int64 refs = 7;
 
   // When read, this contains the current container state. On creation, this requests the initial state (valid options: `created` or `running`). The default is `created`.
-  string state = 7;
+  string state = 8;
 
   // When `systemd` is set to `true`, we will assume that this container will run `systemd`, and perform the necessary magic dance to make systemd run inside of the container. The default is `false`.
-  bool systemd = 8;
+  bool systemd = 9;
 }
 
 message Error {
@@ -58,10 +122,83 @@ message Error {
 // If `mount_id` is specified, then the kind/id will be used to reference that mount.
 // If no `mount_id` is supplied a defition of type `kind` must be present.
 message Mount {
-  string kind = 1;
-  int64 mount_id = 2;
-  MountOverlay overlay = 3;
-  MountRbd rbd = 4;
+
+  MountAttach attach = 1;
+  MountBind bind = 2;
+  int64 id = 3;
+
+  // Kind specifies the kind of mount.  Each kind has corresponding kind-specific options.
+  // 
+  // Currently known kinds:
+  // 
+  // attach - mount a device specified by an attachment.
+  // bind - bind mount a local directory
+  // nfs - mount an NFS filesystem
+  // overlay - overlay mount over an existing mount
+  // uri - download a file from a URI and extract it into a ramdisk mount
+  // 
+  // All kinds may or may not be fully supported by the implementation.
+  string kind = 4;
+  string mountpoint = 5;
+  MountNfs nfs = 6;
+  MountOverlay overlay = 7;
+  int64 refs = 8;
+}
+
+// `mount_attach` describes an attach mount.  This must have at least attach ID associated with it, 
+// and a provided filesystem type.
+// 
+// Either `attach_id` or `attach` must be specified.  If both are specified, `attach` will be ignored.
+// 
+// If `attach` is specified and `attach_id` is omitted, the specified attach will first be attached, and will be
+// detached on deletion.
+message MountAttach {
+  Attach attach = 1;
+  string fs_type = 2;
+
+  // these mount options will be passed to the mount syscall. Supported options depend on filesystem type.
+  repeated string mount_options = 3;
+}
+
+// `mount_bind` describes a local bind mount. 
+// Bind mounts can be relative to another mount, or to /, allowing a way to access local data.
+message MountBind {
+  
+
+  // base determines the relative root for the path.  There are two options:
+  // `root` means to use the current root (`/`) as the base path.
+  // `mount` means to use a mount as the base path. If this is specified, `mount` must be specified as well.
+  string base = 1;
+  Mount mount = 2;
+
+  // A unix-formatted filesystem path with `/` relative to the respective base.
+  string path = 3;
+
+  // perform a recursive bind mount
+  bool recursive = 4;
+
+  // mount read-only
+  bool ro = 5;
+}
+
+// `mount_nfs` describes an NFS mount.
+message MountNfs {
+  // IP or hostname for remote NFS mount
+  string host = 1;
+
+  // Options as specified in nfs(5).  General mount options won't work here.
+  // addr= and clientaddr= will be filled out automatically based on host.
+  // vers= will be filled by version
+  repeated string options = 2;
+
+  // The remote path for the NFS mount
+  string path = 3;
+
+  // mount read-only
+  bool ro = 4;
+
+  // NFS version
+  string version = 5;
 }
 
 // `mount_overlay` describes an Overlayfs mount.  All mount points must be RBD ID's.
@@ -73,50 +210,12 @@ message Mount {
 // 
 // Overlay mounts are identified by their uppermost `lower` ID.
 message MountOverlay {
-  int64 id = 1;
-
   // This is an array of mount specifications to be used (in order) as lower mounts for the overlay.
-  repeated Mount lower = 2;
-  string mountpoint = 3;
-  int64 refs = 4;
+  repeated Mount lower = 1;
 
   // currently, upperdir is always a directory in mountDir
-  string upperdir = 5;
-  string workdir = 6;
-}
-
-// mount_rbd describes an RBD mount.  This must have at least and RBD ID associated with it
-// (which becomes the mount's ID), and a provided filesystem type.
-// 
-// Either `rbd_id` or `rbd` must be specified.  If both are specified, `rbd` will be ignored.
-// 
-// If `rbd` is specified and `rbd_id` is omitted, the RBD will first be attached, and will be
-// detached on deletion.
-message MountRbd {
-  string fs_type = 1;
-  int64 id = 2;
-  repeated string mount_options = 3;
-  string mountpoint = 4;
-  Rbd rbd = 5;
-  int64 rbd_id = 6;
-  int64 refs = 7;
-}
-
-// rbd describes an RBD map.  To successfully map, at least one monitor, pool and image must be specified.
-// Additionally, you will need options.name and options.secret specified.
-message Rbd {
-  // The device_file is the path to the system device file.
-  string device_file = 1;
-
-  // The dev_id is the device ID in the rbd subsystem.
-  int64 device_id = 2;
-  int64 id = 3;
-  string image = 4;
-  repeated string monitors = 5;
-  RbdOptions options = 6;
-  string pool = 7;
-  int64 refs = 8;
-  string snapshot = 9;
+  string upperdir = 2;
+  string workdir = 3;
 }
 
 message RbdOptions {
