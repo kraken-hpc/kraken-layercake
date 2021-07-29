@@ -23,6 +23,7 @@ message Attach {
   // The device_file is the path to the system device file.
   string device_file = 1;
   int64 id = 2;
+  AttachIscsi iscsi = 3;
 
   // Kind specifies the kind of attachment.  Each kind has corresponding kind-specific options.
   // 
@@ -34,11 +35,42 @@ message Attach {
   // rbd - attach a Ceph/RBD object
   // 
   // All kinds may or may not be fully supported by the implementation.
-  string kind = 3;
-  AttachLocal local = 4;
-  AttachLoopback loopback = 5;
-  AttachRbd rbd = 6;
-  int64 refs = 7;
+  string kind = 4;
+  AttachLocal local = 5;
+  AttachLoopback loopback = 6;
+  AttachRbd rbd = 7;
+  int64 refs = 8;
+}
+
+// `attach_iscsi` describes an block device available as an iSCSI attachment.
+// Currently, only AuthType=None is supported.
+// A target are required, and should both be in IQN format.
+// Host is required and can be an IP or hostname.
+// If lun is not specified, it will default to lun0.
+message AttachIscsi {
+  // IP or hostname of target host
+  string host = 1;
+
+  // iSCSI initiator IQN
+  string initiator = 2;
+
+  // iSCSI lun on the target to select
+  int64 lun = 3;
+
+  // Max oustanding iSCSI commands
+  int64 max_comands = 4;
+
+  // Port where the target is listening (default 3260)
+  int64 port = 5;
+
+  // Max oustanding IOs
+  int64 queue_depth = 6;
+
+  // Block device scheduler
+  string scheduler = 7;
+
+  // IQN of the iSCSI target
+  string target = 8;
 }
 
 // `attach_local` describes a block device that is locally present.
@@ -163,7 +195,6 @@ message MountAttach {
 // `mount_bind` describes a local bind mount. 
 // Bind mounts can be relative to another mount, or to /, allowing a way to access local data.
 message MountBind {
-  
 
   // base determines the relative root for the path.  There are two options:
   // `root` means to use the current root (`/`) as the base path.
