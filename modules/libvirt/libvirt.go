@@ -348,6 +348,11 @@ func (v *Virt) connectToServer(srvName string) *lv.Libvirt {
 }
 
 func (v *Virt) vmDiscover(name string, id types.NodeID, libVirtConn *lv.Libvirt) {
+	if libVirtConn == nil {
+		v.api.Logf(types.LLERROR, "libvirt connection is nil, did it fail to open?")
+		return
+	}
+
 	v.api.Logf(types.LLDEBUG, "looking up domain by name: %s", name)
 	dom, err := libVirtConn.DomainLookupByName(name)
 	if err != nil {
@@ -426,7 +431,7 @@ func (v *Virt) vmOff(name string, id types.NodeID, libVirtConn *lv.Libvirt) {
 		return
 	}
 
-	if err := libVirtConn.DomainShutdown(dom); err != nil {
+	if err := libVirtConn.DomainDestroy(dom); err != nil {
 		v.api.Logf(types.LLERROR, "failed to create domain: %s, %v", dom.Name, err)
 	}
 
