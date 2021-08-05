@@ -36,7 +36,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-const Version = "v1.0"
+const Version = "v0.1.2"
 
 type MutationConfig struct {
 	Disable bool          // completely disable the mutation
