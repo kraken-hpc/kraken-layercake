@@ -111,12 +111,12 @@ func (is *ImageAPI) deleteImage(name string, image *ia.Image) {
 	case ContainerState_RUNNING:
 		// tell the node to stop
 		is.api.Logf(types.LLINFO, "stopping image %s", name)
-		params := containers.NewSetContainerStateBynameParams()
-		params.Name = name
+		params := containers.NewSetContainerStateParams()
+		params.Name = &name
 		params.State = string(models.ContainerStateExited)
-		_, err := client.Containers.SetContainerStateByname(params)
+		_, err := client.Containers.SetContainerState(params)
 		if err != nil {
-			if cerr, ok := err.(*containers.SetContainerStateBynameDefault); ok {
+			if cerr, ok := err.(*containers.SetContainerStateDefault); ok {
 				is.api.Logf(types.LLERROR, "failed to stop container %s: Code: %d Message %s", name, cerr.Payload.Code, *cerr.Payload.Message)
 			} else {
 				is.api.Logf(types.LLERROR, "failed to call imageapi: %v", err)
@@ -133,11 +133,11 @@ func (is *ImageAPI) deleteImage(name string, image *ia.Image) {
 	}
 	// ok, we're ready to delete
 	is.api.Logf(types.LLINFO, "deleting image %s", name)
-	params := containers.NewDeleteContainerBynameParams()
-	params.Name = name
-	_, err = client.Containers.DeleteContainerByname(params)
+	params := containers.NewDeleteContainerParams()
+	params.Name = &name
+	_, err = client.Containers.DeleteContainer(params)
 	if err != nil {
-		if cerr, ok := err.(*containers.DeleteContainerBynameDefault); ok {
+		if cerr, ok := err.(*containers.DeleteContainerDefault); ok {
 			is.api.Logf(types.LLERROR, "failed to delete container %s: Code: %d Message %s", name, cerr.Payload.Code, *cerr.Payload.Message)
 			// "discover" our error state
 		} else {

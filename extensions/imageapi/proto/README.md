@@ -8,6 +8,8 @@ $ go get -u github.com/NYTimes/openapi2proto/cmd/openapi2proto
 $ openapi2proto -indent 2 -out generated.proto -skip-rpcs -spec /path/to/swagger.yaml
 ```
 
+Because swagger string enums and proto enums don't quite sync up right, replace all enum types with string types (this is a real pain!).
+
 Finally, we need to replace the generated file headers to contain:
 
 ```proto
