@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2021-08-05
+### Changed
+- port imageapi module and extension to ImageAPI v0.2.0
+### Fixed
+- fix vmOff command to libvirt to use DomainDestroy
+- fix incorrect command versions
+
 ## [0.1.1] - 2021-05-17
 ### Added
 - Added this changelog (`CHANGELOG.md`)
