@@ -14,7 +14,7 @@ require (
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/kraken-hpc/go-fork v0.1.1
-	github.com/kraken-hpc/imageapi v0.2.0-rc2
+	github.com/kraken-hpc/imageapi v0.2.0
 	github.com/kraken-hpc/kraken v0.1.1
 	github.com/kraken-hpc/powerapi v0.1.1
 	github.com/mdlayher/raw v0.0.0-20191009151244-50f2db8cc065
