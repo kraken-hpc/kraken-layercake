@@ -34,7 +34,7 @@ Usage of kraken-template:
 
 `kraken-templte` uses the Go [text/template](https://pkg.go.dev/text/template) engine to fill templates.  It pulls the node state information for one node specified by `-id` (or the kernel commandline).  By default it will pull the configuration node state, though it can pull the discoverable node state if `-dsc` is specified.  The full node state an be referenced within the template, e.g. `{{ .nodename }}` would fill out the node's name.  All string objects are printed as they would be in JSON, e.g. `{{ .id }}` will print a human-readable UUID.
 
-In addition to the node state object, two structures are added to make lookupg up extensions and services easier.  `exptensionsByName` and `servicesByName` are maps from extension/service name to their content.  Because proto objects contain a period in their name, e.g. `IPv4.IPv4OverEthernet`, you will want to use the `index` function with these maps, e.g. `{{ ( index extensionsByName "IPv4.IPv4OverEthernet ).ifaces.hsn.ip.subnet }}` would provide the appropriate path to the subnet address of an interface named "hsn."
+In addition to the node state object, two structures are added to make looking up extensions and services easier.  `exptensionsByName` and `servicesByName` are maps from extension/service name to their content.  Because proto objects contain a period in their name, e.g. `IPv4.IPv4OverEthernet`, you will want to use the `index` function with these maps, e.g. `{{ ( index extensionsByName "IPv4.IPv4OverEthernet ).ifaces.hsn.ip.subnet }}` would provide the appropriate path to the subnet address of an interface named "hsn."
 
 ## Example Usage
 
@@ -61,13 +61,13 @@ We can now create a template to fill out an ifcfg file for this interface:
 
 File: `/etc/sysconfig/network-scripts/ifcfg-ib0`
 
-```jinja
+```jinja2
 TYPE=Infiniband
 DEVICE=ib0
 BOOTPROTO=none
 ONBOOT=yes
-NETMASK={{ ( index extensionByName "IPv4.IPv4OverEthernet ).ifaces.ib0.ip.subnet }}
-IPADDR={{ ( index extensionByName "IPv4.IPv4OverEthernet ).ifaces.ib0.ip.ip }}
+NETMASK={{ ( index extensionByName "IPv4.IPv4OverEthernet" ).ifaces.ib0.ip.subnet }}
+IPADDR={{ ( index extensionByName "IPv4.IPv4OverEthernet" ).ifaces.ib0.ip.ip }}
 ```
 
 Now, instruct the imageapi to build this template on image start.
