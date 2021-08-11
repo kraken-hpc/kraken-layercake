@@ -20,6 +20,7 @@ require (
 	github.com/mdlayher/raw v0.0.0-20191009151244-50f2db8cc065
 	github.com/pin/tftp v2.1.0+incompatible
 	github.com/satori/go.uuid v1.2.0
+	github.com/sirupsen/logrus v1.8.1
 	golang.org/x/net v0.0.0-20210726213435-c6fcb2dbf985
 	google.golang.org/grpc v1.38.0
 	gopkg.in/yaml.v2 v2.4.0
